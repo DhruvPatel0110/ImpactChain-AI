@@ -1,0 +1,26 @@
+[
+    {
+        "name": "BBC World",
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+        "category": "Global",
+        "enabled": true
+    },
+    {
+        "name": "Economic Times",
+        "url": "https://economictimes.indiatimes.com/rss.cms",
+        "category": "India",
+        "enabled": true
+    },
+    {
+        "name": "Nikkei Asia",
+        "url": "https://asia.nikkei.com/rss/feed/nar",
+        "category": "Asia",
+        "enabled": true
+    },
+    {
+        "name": "Al Jazeera",
+        "url": "https://www.aljazeera.com/xml/rss/all.xml",
+        "category": "Middle East",
+        "enabled": true
+    }
+]
