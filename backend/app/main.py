@@ -1,24 +1,16 @@
 from fastapi import FastAPI
+from app.services.rss_feed_service import RSSFeedService
 
 app = FastAPI()
+rss_feed_service = RSSFeedService()
 
 @app.get("/")
 async def home():
     return {
         "message": "ImpactChain AI Backend Running!"
     }
+
 @app.get("/api/articles")
 async def get_articles():
-
-    return [
-        {
-            "title": "Sample Article 1",
-            "source": "BBC World",
-            "published_at": "2026-07-10T12:00:00Z"
-        },
-        {
-            "title": "Sample Article 2",
-            "source": "Economic Times",
-            "published_at": "2026-07-10T12:30:00Z"
-        }
-    ]
+    articles = await rss_feed_service.fetch_articles()
+    return articles
