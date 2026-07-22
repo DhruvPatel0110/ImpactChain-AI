@@ -1,0 +1,182 @@
+[
+    {
+        "title": "Brent crude hits $93 per barrel amid Hormuz shipping slowdown, up 4.1% week-on-week",
+        "description": "Oil prices surged to $93 per barrel as shipping through the Strait of Hormuz faced significant delays. Brent crude rose 4.1% this week amid tensions in the Persian Gulf region.",
+        "content": "Brent crude oil prices hit $93 per barrel on Friday, marking a 4.1% increase week-on-week as shipping through the Strait of Hormuz slowed significantly. OPEC and Saudi Aramco have not signaled any plans to increase output. The price surge reflects growing concerns about supply disruption in the Persian Gulf. Analysts at Goldman Sachs warned that prolonged disruption could push prices above $100 per barrel.",
+        "url": "https://reuters.com/article/crude-oil-hormuz-surge-20240712",
+        "source": "Reuters",
+        "published_at": "2024-07-12T08:30:00Z",
+        "author": "John Smith",
+        "keyword_queried": null
+    },
+    {
+        "title": "Iran conflict rattles global oil markets as tanker routes disrupted",
+        "description": "Iranian military operations near the Persian Gulf have disrupted major tanker routes, causing uncertainty in global crude oil and LNG supply chains.",
+        "content": "Tensions between Iran and Western nations escalated this week, with Iranian naval exercises disrupting tanker traffic in the Persian Gulf. The US State Department issued warnings to shipping companies about navigating the region. Crude oil and LNG shipments from the Gulf are facing delays of up to 48 hours. Industry sources report that some tankers are considering alternate routes around the Cape of Good Hope.",
+        "url": "https://bloomberg.com/article/iran-conflict-oil-markets-20240712",
+        "source": "Bloomberg",
+        "published_at": "2024-07-12T10:15:00Z",
+        "author": "Sarah Chen",
+        "keyword_queried": "supply chain disruption"
+    },
+    {
+        "title": "Shipping rates spike 12% as tankers reroute away from Hormuz strait",
+        "description": "Global shipping costs jumped 12% this week as major carriers including Maersk and Hapag-Lloyd reroute vessels to avoid the Strait of Hormuz.",
+        "content": "Shipping freight rates surged 12% as Maersk and Hapag-Lloyd announced rerouting of tanker vessels away from the Strait of Hormuz. The rerouting adds an estimated 7-10 days to delivery times for crude oil shipments from the Gulf. Container shipping costs are also affected, with spot rates on Asia-Europe routes up $500 per TEU. Industry analysts expect the disruption to continue through August.",
+        "url": "https://cnbc.com/article/shipping-rates-spike-hormuz-20240712",
+        "source": "CNBC",
+        "published_at": "2024-07-12T14:00:00Z",
+        "author": "Mike Turner",
+        "keyword_queried": "shipping delay"
+    },
+    {
+        "title": "Indian refineries face crude oil supply uncertainty as Gulf tensions mount",
+        "description": "BPCL, HPCL, and IOC report potential supply disruptions as crude oil shipments from the Persian Gulf face delays. Import costs have risen to ₹8500 per barrel.",
+        "content": "India's major oil refining companies BPCL, HPCL, and Indian Oil Corporation (IOC) warned of potential supply disruptions as tensions in the Persian Gulf affect crude oil shipments. The cost of crude imports has risen to ₹8500 per barrel, up from ₹7800 last month. India imports over 85% of its crude oil needs, with a significant portion coming from Gulf nations. The government is considering releasing strategic petroleum reserves to stabilize domestic supply.",
+        "url": "https://economictimes.com/article/india-refineries-crude-supply-20240712",
+        "source": "Economic Times",
+        "published_at": "2024-07-12T16:30:00Z",
+        "author": "Priya Sharma",
+        "keyword_queried": null
+    },
+    {
+        "title": "TSMC reports Q2 revenue up 28%, warns of semiconductor shortage in automotive sector",
+        "description": "Taiwan Semiconductor Manufacturing Company posted strong Q2 results but warned that automotive chip shortages could persist through 2025.",
+        "content": "TSMC reported Q2 2024 revenue of $20.8 billion, up 28% year-over-year, driven by strong demand for AI chips. However, the company warned that semiconductor shortages in the automotive sector could persist through 2025 due to capacity constraints. CEO C.C. Wei stated that the company is investing $30 billion in new fabrication facilities. Samsung and Intel are also ramping up chip production to meet demand.",
+        "url": "https://reuters.com/article/tsmc-q2-revenue-semiconductor-20240711",
+        "source": "Reuters",
+        "published_at": "2024-07-11T06:00:00Z",
+        "author": "Wei Zhang",
+        "keyword_queried": "semiconductor shortage"
+    },
+    {
+        "title": "Global chip shortage deepens as Samsung halts DRAM production at Pyeongtaek facility",
+        "description": "Samsung Electronics temporarily halted DRAM production at its Pyeongtaek plant due to a power outage, exacerbating the global semiconductor shortage.",
+        "content": "Samsung Electronics confirmed a temporary halt in DRAM production at its Pyeongtaek fabrication facility following a power outage. The shutdown, which lasted approximately 18 hours, is expected to reduce DRAM output by 2-3% for Q3. DRAM spot prices immediately rose 5.2% on the news. The incident compounds existing semiconductor supply chain bottlenecks, with SK Hynix and Micron unable to fill the gap in the short term.",
+        "url": "https://nikkei.com/article/samsung-dram-halt-pyeongtaek-20240711",
+        "source": "Nikkei Asia",
+        "published_at": "2024-07-11T09:45:00Z",
+        "author": "Takeshi Yamamoto",
+        "keyword_queried": "semiconductor shortage"
+    },
+    {
+        "title": "Apple faces supply chain bottleneck as Foxconn struggles with component shortages",
+        "description": "Apple supplier Foxconn reports component shortages affecting iPhone production timelines, with semiconductor supply remaining tight.",
+        "content": "Foxconn, Apple's primary manufacturing partner, reported ongoing component shortages that could delay iPhone production schedules for Q4 2024. The shortages are primarily in semiconductor chips and display panels. Foxconn CEO Young Liu stated the company is diversifying its supply chain to reduce dependence on single sources. Apple stock fell 2.3% on the news.",
+        "url": "https://bloomberg.com/article/apple-foxconn-supply-bottleneck-20240711",
+        "source": "Bloomberg",
+        "published_at": "2024-07-11T12:30:00Z",
+        "author": "Lisa Park",
+        "keyword_queried": "supply chain disruption"
+    },
+    {
+        "title": "Suez Canal traffic disrupted as container ship runs aground",
+        "description": "A large container vessel has run aground in the Suez Canal, blocking one of the world's most critical shipping lanes and causing significant traffic backlog.",
+        "content": "The Suez Canal Authority confirmed that a large container ship ran aground early Thursday, blocking northbound traffic through the canal. The incident has caused a backlog of over 50 vessels waiting to transit. Tug boats are working to refloat the vessel. The Suez Canal handles approximately 12% of global trade, and prolonged disruption could affect freight rates globally. Shipping companies including CMA CGM and Evergreen have begun rerouting some vessels around the Cape of Good Hope.",
+        "url": "https://reuters.com/article/suez-canal-grounding-20240710",
+        "source": "Reuters",
+        "published_at": "2024-07-10T05:00:00Z",
+        "author": "Ahmed Hassan",
+        "keyword_queried": null
+    },
+    {
+        "title": "Lithium prices surge 15% as demand from EV battery makers outstrips supply",
+        "description": "Lithium carbonate prices jumped 15% in spot markets as Tesla, BYD, and CATL compete for limited supply from Australian and Chilean mines.",
+        "content": "Lithium carbonate spot prices surged 15% this week to $42,000 per tonne as demand from electric vehicle battery manufacturers continues to outstrip supply. Tesla, BYD, and CATL have all increased their procurement bids. Production from Australia's Greenbushes mine and Chile's Atacama facilities has not kept pace with the EV boom. Albemarle and SQM, the world's largest lithium producers, have announced capacity expansion plans but new supply won't come online until 2026.",
+        "url": "https://ft.com/article/lithium-price-surge-ev-demand-20240712",
+        "source": "Financial Times",
+        "published_at": "2024-07-12T07:00:00Z",
+        "author": "James Robertson",
+        "keyword_queried": null
+    },
+    {
+        "title": "Red Sea shipping crisis continues as Houthi attacks force rerouting",
+        "description": "Ongoing Houthi attacks in the Red Sea have forced major shipping lines to reroute through the Cape of Good Hope, adding cost and delay to global trade.",
+        "content": "The Red Sea shipping crisis showed no signs of abating as Houthi forces launched additional attacks on commercial vessels this week. Maersk, MSC, and Hapag-Lloyd have confirmed indefinite suspension of Red Sea transits. The rerouting around Africa adds 10-14 days to Asia-Europe shipping routes and has pushed freight rates up 300% since January. The disruption is particularly affecting European imports of oil, LNG, and manufactured goods from Asia.",
+        "url": "https://bbc.com/article/red-sea-shipping-crisis-houthi-20240712",
+        "source": "BBC World",
+        "published_at": "2024-07-12T11:00:00Z",
+        "author": "Sophie Williams",
+        "keyword_queried": null
+    },
+    {
+        "title": "Copper prices hit record high as mining strikes in Chile disrupt supply",
+        "description": "Copper futures reached $10,500 per tonne amid ongoing strikes at major Chilean mines. Codelco warns of supply deficit through 2025.",
+        "content": "Copper futures hit a record $10,500 per tonne on the London Metal Exchange as strikes at Chilean mining operations disrupted global supply. Codelco, the world's largest copper producer, warned that the supply deficit could persist through 2025. The strikes have taken approximately 200,000 tonnes of annual capacity offline. Freeport-McMoRan and BHP have reported increased demand from renewable energy and EV sectors. Copper is critical for electrical wiring, motors, and green energy infrastructure.",
+        "url": "https://wsj.com/article/copper-record-high-chile-strikes-20240712",
+        "source": "WSJ",
+        "published_at": "2024-07-12T09:30:00Z",
+        "author": "David Chen",
+        "keyword_queried": null
+    },
+    {
+        "title": "US election polls show tight race in swing states",
+        "description": "The latest polling data shows a neck-and-neck race between the two presidential candidates in key battleground states.",
+        "content": "New polling data released today shows an extremely tight presidential race across swing states including Pennsylvania, Michigan, and Wisconsin. Both candidates are within the margin of error in all three states. Political analysts suggest that economic concerns, including inflation and job growth, are the primary issues driving voter decisions. The election is scheduled for November 5, 2024.",
+        "url": "https://cnn.com/article/election-polls-swing-states-20240712",
+        "source": "CNN",
+        "published_at": "2024-07-12T15:00:00Z",
+        "author": "Mark Thompson",
+        "keyword_queried": null
+    },
+    {
+        "title": "Manchester United signs new striker in Premier League transfer window",
+        "description": "Manchester United completed the signing of a new striker for a reported fee of £65 million during the summer transfer window.",
+        "content": "Manchester United has completed the signing of a new striker from Serie A in a deal worth £65 million. The transfer was confirmed after the player passed his medical examination at Carrington. The signing is the club's third major acquisition this summer as they look to challenge for the Premier League title. Manager Erik ten Hag expressed his delight at securing the signature of a player he described as world-class.",
+        "url": "https://bbc.com/sport/football/man-utd-transfer-20240712",
+        "source": "BBC Sport",
+        "published_at": "2024-07-12T18:00:00Z",
+        "author": "Phil McNulty",
+        "keyword_queried": null
+    },
+    {
+        "title": "Reliance Industries reports record quarterly profit driven by refining margins",
+        "description": "Reliance Industries posted a record quarterly profit of ₹19,878 crore, up 31%, driven by strong refining margins and petrochemical demand.",
+        "content": "Reliance Industries reported record quarterly profit of ₹19,878 crore for Q1 FY25, up 31% year-over-year. The results were driven by strong crude oil refining margins, which expanded to $12.7 per barrel. Petrochemical segment revenue grew 18% on higher demand for polymers and polyester. The Jamnagar refinery complex, the world's largest, processed 16.7 million tonnes of crude during the quarter. Chairman Mukesh Ambani highlighted the company's expansion into green energy and renewable fuels.",
+        "url": "https://economictimes.com/article/reliance-record-profit-q1-20240712",
+        "source": "Economic Times",
+        "published_at": "2024-07-12T13:00:00Z",
+        "author": "Rajesh Kumar",
+        "keyword_queried": null
+    },
+    {
+        "title": "Natural gas futures jump 8% as European storage levels drop below 5-year average",
+        "description": "European natural gas prices surged 8% as storage inventories fell below the 5-year seasonal average, raising concerns about winter supply adequacy.",
+        "content": "Natural gas futures on the TTF hub jumped 8% to €35 per megawatt hour as European storage levels dropped below the 5-year seasonal average for the first time since 2022. The decline is attributed to lower-than-expected LNG deliveries and increased cooling demand during the European heatwave. Gazprom pipeline flows remain at minimal levels. Energy ministers from Germany, France, and Italy are scheduled to discuss emergency measures at an EU summit next week. Industrial consumers face potential rationing if storage levels don't recover before winter.",
+        "url": "https://ft.com/article/natural-gas-europe-storage-drop-20240712",
+        "source": "Financial Times",
+        "published_at": "2024-07-12T06:00:00Z",
+        "author": "Maria Santos",
+        "keyword_queried": null
+    },
+    {
+        "title": "New COVID-19 variant detected in Southeast Asia, WHO monitoring",
+        "description": "The World Health Organization is monitoring a new COVID-19 subvariant detected in several Southeast Asian countries.",
+        "content": "The World Health Organization announced it is closely monitoring a new COVID-19 subvariant that has been detected in Thailand, Vietnam, and Indonesia. Early data suggests the variant may be more transmissible but does not appear to cause more severe illness. Health officials in the region have increased surveillance and testing. No new travel restrictions have been recommended at this time.",
+        "url": "https://aljazeera.com/article/covid-variant-southeast-asia-20240712",
+        "source": "Al Jazeera",
+        "published_at": "2024-07-12T08:00:00Z",
+        "author": "Noor Ahmed",
+        "keyword_queried": null
+    },
+    {
+        "title": "Panama Canal reduces daily transits due to drought conditions",
+        "description": "The Panama Canal Authority has reduced daily vessel transits from 36 to 24 due to severe drought conditions affecting water levels in Gatun Lake.",
+        "content": "The Panama Canal Authority announced a further reduction in daily vessel transits from 36 to 24 as drought conditions continue to affect water levels in Gatun Lake. The restrictions have caused a backlog of over 100 vessels waiting to transit. Shipping companies are facing wait times of up to 21 days. Some carriers including ZIM and Yang Ming have begun rerouting vessels around South America. The drought is linked to El Niño conditions and is expected to persist through Q4 2024. The disruption affects approximately 5% of global trade.",
+        "url": "https://reuters.com/article/panama-canal-drought-transits-20240711",
+        "source": "Reuters",
+        "published_at": "2024-07-11T14:00:00Z",
+        "author": "Carlos Mendez",
+        "keyword_queried": null
+    },
+    {
+        "title": "Wheat futures surge as Ukraine grain corridor deal collapses",
+        "description": "Global wheat prices jumped 11% as the Black Sea grain corridor agreement between Russia and Ukraine collapsed, threatening food supply chains.",
+        "content": "Wheat futures on the Chicago Board of Trade surged 11% to $7.85 per bushel after Russia withdrew from the Black Sea grain corridor agreement. Ukraine accounts for approximately 10% of global wheat exports, and the collapse of the deal threatens food supply chains across Africa and the Middle East. Soybean and corn prices also rose 3-5% on spillover concerns. The World Bank warned that prolonged disruption could push food prices to levels not seen since 2022.",
+        "url": "https://bloomberg.com/article/wheat-surge-ukraine-grain-corridor-20240710",
+        "source": "Bloomberg",
+        "published_at": "2024-07-10T11:30:00Z",
+        "author": "Elena Volkov",
+        "keyword_queried": "supply chain disruption"
+    }
+]
