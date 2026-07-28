@@ -1,50 +1,111 @@
 """
 ImpactChain AI — FastAPI Backend
 
-Endpoints:
-  GET  /                    → Health check
-  GET  /api/articles        → Raw RSS articles (legacy)
-  POST /api/pipeline/run    → Trigger full ingest + normalize pipeline
-  GET  /api/events          → Query master events (sorted by relevance)
-  GET  /api/events/{uid}    → Single event with source articles
-  GET  /api/stats           → Pipeline summary statistics
+Phase 1 endpoints:
+  GET  /                        → Health check
+  POST /api/phase1/run          → Manually trigger Phase 1 ingestion pipeline
+  GET  /api/articles            → Raw RSS articles (legacy)
+  POST /api/pipeline/run        → Legacy pipeline trigger
+  GET  /api/events              → Query master events (legacy)
+  GET  /api/events/{uid}        → Single event (legacy)
+  GET  /api/stats               → Pipeline stats (legacy)
+
+Phase 1 also runs automatically on server startup.
 """
+
+import sys
+import os
+from pathlib import Path
+
+# Ensure the backend directory is on sys.path so Phase 1 modules can be imported
+_backend_dir = str(Path(__file__).resolve().parent.parent)
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
 
 from fastapi import FastAPI, HTTPException, Query
 from loguru import logger
 
+# Legacy imports (old pipeline)
 from app.services.rss_feed_service import RSSFeedService
 from app.services.ingestion_orchestrator import IngestionOrchestrator
-from app.services.normalization import query_master_events, query_event_by_uid, get_pipeline_stats, init_database
+from app.services.normalization import (
+    query_master_events,
+    query_event_by_uid,
+    get_pipeline_stats,
+    init_database,
+)
+
+# Phase 1 imports
+from ingestion import run_phase_1
 
 app = FastAPI(
     title="ImpactChain AI",
     description="Supply-chain intelligence from real-time news signals",
-    version="0.2.0",
+    version="0.3.0",
 )
 
 rss_feed_service = RSSFeedService()
 orchestrator = IngestionOrchestrator()
 
 
+# ============================================================================
+# Startup
+# ============================================================================
+
 @app.on_event("startup")
-def startup_event():
-    """Ensure database schema is created on startup without wiping existing data."""
+async def startup_event():
+    """
+    On server startup:
+    1. Initialize legacy database schema (non-destructive)
+    2. Run Phase 1 ingestion pipeline
+    """
+    # Legacy DB init
     try:
         init_database(fresh=False)
-        logger.info("Database initialized on startup.")
+        logger.info("Legacy database initialized on startup.")
     except Exception as e:
-        logger.error(f"Failed to initialize database on startup: {e}")
+        logger.error(f"Failed to initialize legacy database on startup: {e}")
+
+    # Phase 1 ingestion
+    logger.info("Starting Phase 1 ingestion pipeline...")
+    try:
+        await run_phase_1()
+        logger.info("Phase 1 ingestion pipeline complete.")
+    except Exception as e:
+        logger.error(f"Phase 1 ingestion pipeline failed: {e}")
 
 
+# ============================================================================
+# Phase 1 Endpoints
+# ============================================================================
+
+@app.post("/api/phase1/run")
+async def trigger_phase1():
+    """Manually trigger the Phase 1 ingestion pipeline."""
+    try:
+        await run_phase_1()
+        return {"status": "success", "message": "Phase 1 ingestion pipeline completed"}
+    except Exception as e:
+        logger.error(f"Phase 1 manual trigger failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Phase 1 failed: {str(e)}")
+
+
+# ============================================================================
+# Health Check
+# ============================================================================
 
 @app.get("/")
 async def home():
     return {
         "message": "ImpactChain AI Backend Running!",
-        "version": "0.2.0",
+        "version": "0.3.0",
+        "phase_1": "active",
     }
 
+
+# ============================================================================
+# Legacy Endpoints (preserved for backward compatibility)
+# ============================================================================
 
 @app.get("/api/articles")
 async def get_articles():
@@ -58,7 +119,7 @@ async def run_pipeline(
     keywords: list[str] | None = None,
 ):
     """
-    Trigger full pipeline: ingest from all sources → normalize → store events.
+    Trigger full legacy pipeline: ingest from all sources → normalize → store events.
 
     Optional body: list of keywords for NewsAPI search.
     If not provided, uses default supply chain keywords.

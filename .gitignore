@@ -1,3 +1,8 @@
 .env
 backend/__pycache__
 node_modules
+data/master.db
+backend/data/master.db
+backend/logs/
+logs/
+*.db

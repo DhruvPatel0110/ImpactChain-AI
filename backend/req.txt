@@ -16,4 +16,5 @@ feedparser
 loguru
 python-dotenv
 python-dateutil
-spacy
+spacy>=3.5.0
+groq
