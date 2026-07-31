@@ -18,3 +18,5 @@ python-dotenv
 python-dateutil
 spacy>=3.5.0
 groq
+sentence-transformers>=2.2.2
+chromadb>=0.4.0

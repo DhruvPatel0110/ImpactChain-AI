@@ -28,7 +28,7 @@ else:
 # Mandatory API Keys — raise at import time if missing
 # ---------------------------------------------------------------------------
 GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-NEWSAPI_KEY: str = os.getenv("NEWSAPI_KEY", "")
+NEWSAPI_KEY: str = os.getenv("NEWSAPI_KEY") or os.getenv("NEWS_API_KEY", "")
 
 if not GROQ_API_KEY:
     print("ERROR: GROQ_API_KEY is not set in .env — Phase 1 cannot run.", file=sys.stderr)
@@ -64,9 +64,10 @@ logging.basicConfig(
 )
 
 # ---------------------------------------------------------------------------
-# Groq Model
+# Groq Models (Primary 70B, Fallback 8B with 500k TPD daily quota)
 # ---------------------------------------------------------------------------
-GROQ_MODEL: str = "llama3-70b-8192"
+GROQ_MODEL: str = "llama-3.3-70b-versatile"
+FALLBACK_GROQ_MODEL: str = "llama-3.1-8b-instant"
 
 # ---------------------------------------------------------------------------
 # NewsAPI Settings
@@ -79,18 +80,16 @@ NEWSAPI_PAGE_SIZE: int = 50
 # RSS Feed URLs — hardcoded per spec
 # ---------------------------------------------------------------------------
 RSS_FEEDS: list[dict] = [
-    {"name": "Reuters Business", "url": "https://feeds.reuters.com/reuters/businessNews"},
-    {"name": "CNBC Financials", "url": "https://www.cnbc.com/id/10000664/device/rss/rss.html"},
     {"name": "BBC Business", "url": "https://feeds.bbci.co.uk/news/business/rss.xml"},
-    {"name": "Al Jazeera", "url": "https://www.aljazeera.com/xml/rss/all.xml"},
     {"name": "Economic Times", "url": "https://economictimes.indiatimes.com/rssfeedstopstories.cms"},
     {"name": "Financial Express", "url": "https://www.financialexpress.com/feed/"},
-    {"name": "AP Business", "url": "https://rsshub.app/apnews/topics/business"},
-    {"name": "Mint", "url": "https://www.livemint.com/rss/economy"},
-    {"name": "Business Standard", "url": "https://www.business-standard.com/rss/economy-policy-702.rss"},
+    {"name": "Mint Economy", "url": "https://www.livemint.com/rss/economy"},
+    {"name": "CNBC World News", "url": "https://search.cnbc.com/rs/search/combinedrenderer/view.xml?partnerId=2000&keywords=business&target=all"},
     {"name": "Google News Business", "url": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnVHZ0pWVXlnQVAB"},
     {"name": "Yahoo Finance", "url": "https://finance.yahoo.com/news/rssindex"},
-    {"name": "MarketWatch", "url": "https://feeds.marketwatch.com/marketwatch/topstories/"},
+    {"name": "MarketWatch Top Stories", "url": "https://feeds.content.dowjones.io/public/rss/mw_topstories"},
+    {"name": "Al Jazeera Economy", "url": "https://www.aljazeera.com/xml/rss/all.xml"},
+    {"name": "WSJ Markets", "url": "https://feeds.content.dowjones.io/public/rss/WSJcomUSBusiness"},
 ]
 
 # ---------------------------------------------------------------------------

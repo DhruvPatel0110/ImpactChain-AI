@@ -1,16 +1,20 @@
 """
 ImpactChain AI — FastAPI Backend
 
+Startup sequence:
+  1. Legacy DB init
+  2. Phase 1 — ingestion (NewsAPI + RSS → spaCy → Groq → master.db)
+  3. Phase 2A — embeddings (master.db → sentence-transformers → ChromaDB)
+
 Phase 1 endpoints:
   GET  /                        → Health check
   POST /api/phase1/run          → Manually trigger Phase 1 ingestion pipeline
+  POST /api/phase2a/run         → Manually trigger Phase 2A embedding pipeline
   GET  /api/articles            → Raw RSS articles (legacy)
   POST /api/pipeline/run        → Legacy pipeline trigger
   GET  /api/events              → Query master events (legacy)
   GET  /api/events/{uid}        → Single event (legacy)
   GET  /api/stats               → Pipeline stats (legacy)
-
-Phase 1 also runs automatically on server startup.
 """
 
 import sys
@@ -38,10 +42,13 @@ from app.services.normalization import (
 # Phase 1 imports
 from ingestion import run_phase_1
 
+# Phase 2A imports
+from phase2 import run_phase2a
+
 app = FastAPI(
     title="ImpactChain AI",
     description="Supply-chain intelligence from real-time news signals",
-    version="0.3.0",
+    version="0.4.0",
 )
 
 rss_feed_service = RSSFeedService()
@@ -58,6 +65,7 @@ async def startup_event():
     On server startup:
     1. Initialize legacy database schema (non-destructive)
     2. Run Phase 1 ingestion pipeline
+    3. Run Phase 2A — generate embeddings for new articles and store in ChromaDB
     """
     # Legacy DB init
     try:
@@ -66,13 +74,21 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Failed to initialize legacy database on startup: {e}")
 
-    # Phase 1 ingestion
+    # Phase 1 — ingestion
     logger.info("Starting Phase 1 ingestion pipeline...")
     try:
         await run_phase_1()
         logger.info("Phase 1 ingestion pipeline complete.")
     except Exception as e:
         logger.error(f"Phase 1 ingestion pipeline failed: {e}")
+
+    # Phase 2A — embeddings + ChromaDB
+    logger.info("Starting Phase 2A: Embeddings and ChromaDB...")
+    try:
+        await run_phase2a()
+        logger.info("Phase 2A complete.")
+    except Exception as e:
+        logger.error(f"Phase 2A pipeline failed: {e}")
 
 
 # ============================================================================
@@ -90,6 +106,17 @@ async def trigger_phase1():
         raise HTTPException(status_code=500, detail=f"Phase 1 failed: {str(e)}")
 
 
+@app.post("/api/phase2a/run")
+async def trigger_phase2a():
+    """Manually trigger the Phase 2A embedding pipeline."""
+    try:
+        await run_phase2a()
+        return {"status": "success", "message": "Phase 2A embedding pipeline completed"}
+    except Exception as e:
+        logger.error(f"Phase 2A manual trigger failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Phase 2A failed: {str(e)}")
+
+
 # ============================================================================
 # Health Check
 # ============================================================================
@@ -98,8 +125,9 @@ async def trigger_phase1():
 async def home():
     return {
         "message": "ImpactChain AI Backend Running!",
-        "version": "0.3.0",
+        "version": "0.4.0",
         "phase_1": "active",
+        "phase_2a": "active",
     }
 
 

@@ -9,7 +9,7 @@ import json
 import asyncio
 import logging
 
-from config import GROQ_API_KEY, GROQ_MODEL
+from config import GROQ_API_KEY, GROQ_MODEL, FALLBACK_GROQ_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -153,11 +153,13 @@ async def extract_relationships_groq(
         logger.error(f"Article {article_id}: GROQ_API_KEY is not set, cannot extract relationships")
         return None
 
-    # Build article text
+    # Build article text — trim to 1500 chars to conserve API tokens
     title = article.get("title") or ""
     description = article.get("description") or ""
     content = article.get("content") or ""
     full_text = f"{title}\n\n{description}\n\n{content}".strip()
+    if len(full_text) > 1500:
+        full_text = full_text[:1500] + "..."
 
     if not full_text:
         logger.warning(f"Article {article_id}: empty text, skipping Groq extraction")
@@ -167,28 +169,30 @@ async def extract_relationships_groq(
     scaffold_json = json.dumps(spacy_scaffold.get("raw_entities", {}), indent=2)
     user_message = f"Article:\n{full_text}\n\nspaCy Entities Already Extracted:\n{scaffold_json}"
 
-    # Retry loop
+    # Retry loop with automatic model fallback
     last_error = None
     raw_response_text = None
+    current_model = GROQ_MODEL
 
     for attempt in range(max_retries + 1):
         try:
             # Import groq client inside the function to handle missing package gracefully
-            from groq import Groq
+            from groq import Groq, APIStatusError
 
             client = Groq(api_key=GROQ_API_KEY)
 
             logger.info(
-                f"Article {article_id}: calling Groq API "
+                f"Article {article_id}: calling Groq API using model '{current_model}' "
                 f"(attempt {attempt + 1}/{max_retries + 1})"
             )
 
             # Groq client is synchronous — run in executor to avoid blocking event loop
             loop = asyncio.get_event_loop()
+            target_model = current_model
             completion = await loop.run_in_executor(
                 None,
                 lambda: client.chat.completions.create(
-                    model=GROQ_MODEL,
+                    model=target_model,
                     messages=[
                         {"role": "system", "content": _SYSTEM_PROMPT},
                         {"role": "user", "content": user_message},
@@ -244,15 +248,21 @@ async def extract_relationships_groq(
 
         except Exception as e:
             last_error = str(e)
-            logger.warning(
-                f"Article {article_id}: Groq API error "
-                f"(attempt {attempt + 1}): {e}"
-            )
+            if "429" in str(e) or "rate_limit_exceeded" in str(e):
+                logger.warning(
+                    f"Article {article_id}: Groq rate limit hit on model '{current_model}'. "
+                    f"Switching fallback model to '{FALLBACK_GROQ_MODEL}'."
+                )
+                current_model = FALLBACK_GROQ_MODEL
+            else:
+                logger.warning(
+                    f"Article {article_id}: Groq API error "
+                    f"(attempt {attempt + 1}): {e}"
+                )
 
         # Backoff before retry (except on last attempt)
         if attempt < max_retries:
-            logger.info(f"Article {article_id}: retrying in 5 seconds...")
-            await asyncio.sleep(5)
+            await asyncio.sleep(2)
 
     # All retries exhausted
     logger.error(

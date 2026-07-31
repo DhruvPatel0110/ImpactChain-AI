@@ -6,3 +6,5 @@ backend/data/master.db
 backend/logs/
 logs/
 *.db
+data/chroma_db/
+backend/data/chroma_db/
