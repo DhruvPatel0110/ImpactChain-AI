@@ -8,6 +8,13 @@ a single canonical normalized record for database storage.
 import logging
 from datetime import datetime, timezone
 
+from entity_filter import (
+    filter_entity_roles,
+    filter_commodities,
+    filter_entities_from_scaffold,
+    filter_relationships,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,6 +84,9 @@ def merge_and_normalize(
     else:
         primary_commodities = []
 
+    # Filter irrelevant commodities
+    primary_commodities = filter_commodities(primary_commodities)
+
     # Entity roles from Groq (ensure all keys and values lowercase)
     entity_roles = groq_response.get("entity_roles") or {}
     if isinstance(entity_roles, dict):
@@ -86,6 +96,9 @@ def merge_and_normalize(
         }
     else:
         entity_roles = {}
+
+    # Filter irrelevant entities and validate roles
+    entity_roles = filter_entity_roles(entity_roles)
 
     # Relationships from Groq (ensure all entity names lowercase)
     relationships = groq_response.get("relationships") or []
@@ -101,6 +114,9 @@ def merge_and_normalize(
             logger.warning(f"Article {article_id}: skipping malformed triple: {triple}")
     relationships = normalized_rels
 
+    # Filter relationships with irrelevant entities
+    relationships = filter_relationships(relationships)
+
     # Economic impact chain from Groq (keep exact text)
     economic_impact_chain = groq_response.get("economic_impact_chain") or []
 
@@ -109,6 +125,9 @@ def merge_and_normalize(
 
     # spaCy entities (already lowercased in Step 1.2)
     raw_entities = spacy_scaffold.get("raw_entities", {})
+
+    # Filter irrelevant entities from spaCy scaffold
+    raw_entities = filter_entities_from_scaffold(raw_entities)
 
     # ------------------------------------------------------------------
     # Assemble canonical normalized record
