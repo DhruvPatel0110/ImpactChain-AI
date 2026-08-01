@@ -326,6 +326,15 @@ async def run_phase_1():
         logger.warning("No new articles to process — Phase 1 complete (no-op)")
         return
 
+    # Cap batch size to respect Groq rate limits and prevent long blocking runs
+    MAX_BATCH_SIZE = 15
+    if len(raw_articles) > MAX_BATCH_SIZE:
+        logger.info(
+            f"Ingestion fetched {len(raw_articles)} new articles — "
+            f"capping batch to top {MAX_BATCH_SIZE} to respect API rate limits."
+        )
+        raw_articles = raw_articles[:MAX_BATCH_SIZE]
+
     logger.info(f"Processing {len(raw_articles)} new articles")
 
     # Load spaCy model once

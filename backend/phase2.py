@@ -1,19 +1,21 @@
 """
-ImpactChain AI — Phase 2A Orchestrator
+ImpactChain AI — Phase 2 Orchestrator (2A + 2B)
 
-Covers Steps 2.1, 2.2, and 2.3:
-  2.1  fetch_unembedded_articles() — read from master.db, skip already-in-ChromaDB
-  2.2  generate_embedding()        — compound string + sentence-transformers vector
-  2.3  VectorStore.batch_add_articles() — persist to ChromaDB
+Phase 2A (Steps 2.1–2.3):
+  fetch_unembedded_articles() — read from master.db, skip already-in-ChromaDB
+  generate_embedding()        — compound string + sentence-transformers vector
+  VectorStore.batch_add_articles() — persist to ChromaDB
 
-Entry point: run_phase2a()
-  Called from main.py startup event after run_phase_1() completes.
+Phase 2B (Step 2.4):
+  fetch_articles_for_graph()  — read from master.db, skip already-in-graph
+  MasterGraph.update_from_articles() — incremental graph update
+  MasterGraph._save()         — persist to data/master_graph.json
 
-Idempotency guarantee:
-  On every startup, existing ChromaDB IDs are fetched first. Articles that are
-  already embedded are skipped. Only genuinely new articles (added by the latest
-  Phase 1 run) are processed and inserted into ChromaDB.
+Entry points:
+  run_phase2a() — called from main.py startup after run_phase_1()
+  run_phase2b() — called from main.py startup after run_phase2a()
 """
+
 
 import json
 import logging
@@ -258,3 +260,136 @@ async def run_phase2a():
         f"ChromaDB collection now contains {vector_store.count()} total documents."
     )
     logger.info("=" * 60)
+
+
+# ============================================================================
+# Step 2.4 — Fetch articles for graph update
+# ============================================================================
+
+def fetch_articles_for_graph(
+    last_processed_timestamp: Optional[str] = None,
+) -> list[dict]:
+    """
+    Query master.db for relevant articles that have not yet been processed
+    into the master graph.
+
+    If last_processed_timestamp is provided, only articles with
+    ingested_at > that timestamp are returned.
+    If None (fresh graph), ALL relevant articles are returned.
+
+    Args:
+        last_processed_timestamp: ISO timestamp string from graph_metadata table,
+                                  or None for a fresh graph.
+
+    Returns:
+        List of normalized article dicts, ordered by ingested_at ascending.
+    """
+    db_path = _DATABASE_PATH
+
+    if not Path(db_path).exists():
+        logger.warning(f"master.db not found at {db_path} — no articles for graph.")
+        return []
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        if last_processed_timestamp:
+            cursor.execute(
+                """
+                SELECT full_json
+                FROM articles
+                WHERE is_relevant = 1
+                  AND confidence >= 0.40
+                  AND ingested_at > ?
+                ORDER BY ingested_at ASC
+                """,
+                (last_processed_timestamp,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT full_json
+                FROM articles
+                WHERE is_relevant = 1
+                  AND confidence >= 0.40
+                ORDER BY ingested_at ASC
+                """
+            )
+
+        rows = cursor.fetchall()
+        conn.close()
+    except Exception as e:
+        logger.error(
+            f"Failed to query master.db for graph articles: {e}", exc_info=True
+        )
+        return []
+
+    articles: list[dict] = []
+    for row in rows:
+        try:
+            article = json.loads(row["full_json"])
+            articles.append(article)
+        except json.JSONDecodeError as e:
+            logger.warning(f"Skipping article with invalid full_json: {e}")
+
+    logger.info(
+        f"Found {len(articles)} articles for graph update "
+        f"(since={last_processed_timestamp or 'beginning'})."
+    )
+    return articles
+
+
+# ============================================================================
+# Phase 2B main entry point
+# ============================================================================
+
+def run_phase2b():
+    """
+    Phase 2B orchestrator — Master Graph Construction.
+
+    Execution order:
+      1. Instantiate MasterGraph (loads from disk or creates empty).
+      2. Fetch articles from master.db newer than last_processed_at.
+      3. If none found, return the existing (already up-to-date) graph.
+      4. Feed new articles into graph (nodes + edges with weight accumulation).
+      5. Save graph to data/master_graph.json (atomic write).
+      6. Update graph_metadata.last_processed_at in master.db.
+
+    Returns the MasterGraph instance so main.py can store it in app_state
+    for the lifetime of the server (Phase 4 reads from this object).
+
+    This function is synchronous — no async needed because it does purely
+    CPU + disk work with no external API calls.
+    """
+    from master_graph import MasterGraph
+
+    logger.info("=" * 60)
+    logger.info("Phase 2B starting: Master Graph Construction")
+    logger.info("=" * 60)
+
+    try:
+        master_graph = MasterGraph()
+    except Exception as e:
+        logger.error(f"Phase 2B aborted: MasterGraph initialisation failed: {e}")
+        return None
+
+    # Fetch only articles not yet reflected in the graph
+    articles = fetch_articles_for_graph(master_graph._last_processed_timestamp)
+
+    if not articles:
+        logger.info("Master graph is already up to date. No new articles to process.")
+        stats = master_graph.get_graph_stats()
+        logger.info(f"Current graph stats: {stats}")
+        logger.info("=" * 60)
+        return master_graph
+
+    # Incremental update
+    master_graph.update_from_articles(articles)
+
+    stats = master_graph.get_graph_stats()
+    logger.info(f"Phase 2B complete. Graph stats: {stats}")
+    logger.info("=" * 60)
+
+    return master_graph

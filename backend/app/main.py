@@ -3,13 +3,17 @@ ImpactChain AI — FastAPI Backend
 
 Startup sequence:
   1. Legacy DB init
-  2. Phase 1 — ingestion (NewsAPI + RSS → spaCy → Groq → master.db)
+  2. Phase 1  — ingestion (NewsAPI + RSS → spaCy → Groq → master.db)
   3. Phase 2A — embeddings (master.db → sentence-transformers → ChromaDB)
+  4. Phase 2B — master graph construction (master.db → NetworkX → master_graph.json)
 
-Phase 1 endpoints:
+Endpoints:
   GET  /                        → Health check
   POST /api/phase1/run          → Manually trigger Phase 1 ingestion pipeline
   POST /api/phase2a/run         → Manually trigger Phase 2A embedding pipeline
+  POST /api/phase2b/run         → Manually trigger Phase 2B graph construction
+  GET  /api/graph/master        → Full master graph JSON (frontend initial load)
+  GET  /api/graph/stats         → Master graph statistics
   GET  /api/articles            → Raw RSS articles (legacy)
   POST /api/pipeline/run        → Legacy pipeline trigger
   GET  /api/events              → Query master events (legacy)
@@ -19,6 +23,7 @@ Phase 1 endpoints:
 
 import sys
 import os
+import asyncio
 from pathlib import Path
 
 # Ensure the backend directory is on sys.path so Phase 1 modules can be imported
@@ -39,20 +44,52 @@ from app.services.normalization import (
     init_database,
 )
 
-# Phase 1 imports
+# Phase 1, 2A, 2B imports
 from ingestion import run_phase_1
-
-# Phase 2A imports
-from phase2 import run_phase2a
+from phase2 import run_phase2a, run_phase2b
+from master_graph import MasterGraph
 
 app = FastAPI(
     title="ImpactChain AI",
     description="Supply-chain intelligence from real-time news signals",
-    version="0.4.0",
+    version="0.5.0",
 )
+
+# ---------------------------------------------------------------------------
+# Application state — holds objects that persist across requests
+# ---------------------------------------------------------------------------
+app_state: dict = {}
 
 rss_feed_service = RSSFeedService()
 orchestrator = IngestionOrchestrator()
+
+
+async def _run_startup_pipeline():
+    """Background task: Run Phase 1 → Phase 2A → Phase 2B sequentially."""
+    logger.info("Background pipeline started (Phase 1 → Phase 2A → Phase 2B)...")
+
+    # Phase 1 — ingestion
+    try:
+        await run_phase_1()
+        logger.info("Background Phase 1 complete.")
+    except Exception as e:
+        logger.error(f"Background Phase 1 failed: {e}")
+
+    # Phase 2A — embeddings + ChromaDB
+    try:
+        await run_phase2a()
+        logger.info("Background Phase 2A complete.")
+    except Exception as e:
+        logger.error(f"Background Phase 2A failed: {e}")
+
+    # Phase 2B — master graph construction
+    try:
+        master_graph = run_phase2b()
+        if master_graph:
+            app_state["master_graph"] = master_graph
+        logger.info("Background Phase 2B complete. Master graph updated in app_state.")
+    except Exception as e:
+        logger.error(f"Background Phase 2B failed: {e}")
 
 
 # ============================================================================
@@ -64,8 +101,8 @@ async def startup_event():
     """
     On server startup:
     1. Initialize legacy database schema (non-destructive)
-    2. Run Phase 1 ingestion pipeline
-    3. Run Phase 2A — generate embeddings for new articles and store in ChromaDB
+    2. Pre-load MasterGraph into app_state so endpoints serve immediately
+    3. Trigger Phase 1/2A/2B pipeline in background (non-blocking)
     """
     # Legacy DB init
     try:
@@ -74,21 +111,16 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Failed to initialize legacy database on startup: {e}")
 
-    # Phase 1 — ingestion
-    logger.info("Starting Phase 1 ingestion pipeline...")
+    # Pre-load MasterGraph into app_state right away
     try:
-        await run_phase_1()
-        logger.info("Phase 1 ingestion pipeline complete.")
+        app_state["master_graph"] = MasterGraph()
+        logger.info("MasterGraph loaded into app_state.")
     except Exception as e:
-        logger.error(f"Phase 1 ingestion pipeline failed: {e}")
+        logger.error(f"Failed to load MasterGraph: {e}")
 
-    # Phase 2A — embeddings + ChromaDB
-    logger.info("Starting Phase 2A: Embeddings and ChromaDB...")
-    try:
-        await run_phase2a()
-        logger.info("Phase 2A complete.")
-    except Exception as e:
-        logger.error(f"Phase 2A pipeline failed: {e}")
+    # Launch pipeline in background so server listens on port 8000 IMMEDIATELY
+    asyncio.create_task(_run_startup_pipeline())
+    logger.info("Server startup complete. HTTP endpoints live at http://127.0.0.1:8000")
 
 
 # ============================================================================
@@ -117,6 +149,18 @@ async def trigger_phase2a():
         raise HTTPException(status_code=500, detail=f"Phase 2A failed: {str(e)}")
 
 
+@app.post("/api/phase2b/run")
+async def trigger_phase2b():
+    """Manually trigger the Phase 2B master graph construction pipeline."""
+    try:
+        master_graph = run_phase2b()
+        app_state["master_graph"] = master_graph
+        return {"status": "success", "message": "Phase 2B master graph pipeline completed"}
+    except Exception as e:
+        logger.error(f"Phase 2B manual trigger failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Phase 2B failed: {str(e)}")
+
+
 # ============================================================================
 # Health Check
 # ============================================================================
@@ -125,10 +169,39 @@ async def trigger_phase2a():
 async def home():
     return {
         "message": "ImpactChain AI Backend Running!",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "phase_1": "active",
         "phase_2a": "active",
+        "phase_2b": "active",
     }
+
+
+# ============================================================================
+# Master Graph Endpoints (Phase 2B)
+# ============================================================================
+
+@app.get("/api/graph/master")
+def get_master_graph():
+    """
+    Return the full master graph as node-link JSON.
+
+    Called ONCE by the frontend on initial load. The frontend caches this
+    and does not request it again per query. Per-query highlighting data
+    is served by Phase 4 endpoints instead.
+    """
+    master_graph = app_state.get("master_graph")
+    if master_graph is None:
+        raise HTTPException(status_code=503, detail="Master graph not yet initialized")
+    return master_graph.get_full_graph_json()
+
+
+@app.get("/api/graph/stats")
+def get_graph_stats():
+    """Return master graph statistics: node/edge counts, top-weighted entities."""
+    master_graph = app_state.get("master_graph")
+    if master_graph is None:
+        raise HTTPException(status_code=503, detail="Master graph not yet initialized")
+    return master_graph.get_graph_stats()
 
 
 # ============================================================================

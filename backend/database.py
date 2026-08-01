@@ -106,6 +106,15 @@ CREATE TABLE IF NOT EXISTS failed_extractions (
     raw_groq_response   TEXT,
     created_at          TEXT
 );
+
+-- ============================================================
+-- TABLE 7: graph_metadata (Phase 2B)
+-- Tracks which articles have been processed into the master graph.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS graph_metadata (
+    key     TEXT PRIMARY KEY,
+    value   TEXT
+);
 """
 
 
