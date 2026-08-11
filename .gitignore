@@ -8,3 +8,5 @@ logs/
 *.db
 data/chroma_db/
 backend/data/chroma_db/
+data/master_graph.json
+backend/data/master_graph.json
