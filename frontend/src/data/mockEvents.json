@@ -1,0 +1,100 @@
+[
+  {
+    "id": "event_usa_iran",
+    "name": "USA-Iran Tensions",
+    "tier": "critical-active",
+    "color": "rgb(255, 0, 0)",
+    "countries": ["USA", "Iran", "UAE"],
+    "coordinates": [
+      { "country": "USA", "lat": 38.89, "lng": -77.04 },
+      { "country": "Iran", "lat": 35.67, "lng": 51.39 },
+      { "country": "UAE", "lat": 24.45, "lng": 54.37 }
+    ],
+    "ringSize": 60,
+    "pulseBehavior": "fast-blink"
+  },
+  {
+    "id": "event_colombia_earthquake",
+    "name": "Colombia Earthquake",
+    "tier": "critical-active",
+    "color": "rgb(255, 0, 0)",
+    "countries": ["Colombia"],
+    "coordinates": [
+      { "country": "Colombia", "lat": 4.57, "lng": -74.30 }
+    ],
+    "ringSize": 50,
+    "pulseBehavior": "fast-blink"
+  },
+  {
+    "id": "event_pakistan",
+    "name": "Pakistan Instability",
+    "tier": "major",
+    "color": "rgb(255, 0, 0)",
+    "countries": ["Pakistan"],
+    "coordinates": [
+      { "country": "Pakistan", "lat": 33.68, "lng": 73.16 }
+    ],
+    "ringSize": 55,
+    "pulseBehavior": "steady-pulse"
+  },
+  {
+    "id": "event_afghanistan",
+    "name": "Afghanistan Disruption",
+    "tier": "major",
+    "color": "rgb(255, 0, 0)",
+    "countries": ["Afghanistan"],
+    "coordinates": [
+      { "country": "Afghanistan", "lat": 34.53, "lng": 69.18 }
+    ],
+    "ringSize": 50,
+    "pulseBehavior": "steady-pulse"
+  },
+  {
+    "id": "event_ukraine",
+    "name": "Ukraine Conflict",
+    "tier": "major",
+    "color": "rgb(255, 0, 0)",
+    "countries": ["Ukraine"],
+    "coordinates": [
+      { "country": "Ukraine", "lat": 48.38, "lng": 31.17 }
+    ],
+    "ringSize": 60,
+    "pulseBehavior": "steady-pulse"
+  },
+  {
+    "id": "event_india",
+    "name": "India Economic Impact",
+    "tier": "moderate",
+    "color": "rgb(255, 165, 0)",
+    "countries": ["India"],
+    "coordinates": [
+      { "country": "India", "lat": 28.61, "lng": 77.23 }
+    ],
+    "ringSize": 70,
+    "pulseBehavior": "slow-pulse"
+  },
+  {
+    "id": "event_russia",
+    "name": "Russia Regional Activity",
+    "tier": "moderate",
+    "color": "rgb(255, 165, 0)",
+    "countries": ["Russia"],
+    "coordinates": [
+      { "country": "Russia", "lat": 55.75, "lng": 37.62 }
+    ],
+    "ringSize": 80,
+    "pulseBehavior": "slow-pulse"
+  },
+  {
+    "id": "event_japan",
+    "name": "Japan Supply Chain",
+    "tier": "moderate",
+    "color": "rgb(255, 165, 0)",
+    "countries": ["Japan"],
+    "coordinates": [
+      { "country": "Japan", "lat": 35.68, "lng": 139.69 }
+    ],
+    "ringSize": 65,
+    "pulseBehavior": "slow-pulse"
+  }
+]

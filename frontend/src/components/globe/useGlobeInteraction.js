@@ -72,30 +72,28 @@ export function useGlobeInteraction(globeRef) {
     flyTo(WORLD_CENTER.lat, WORLD_CENTER.lng, WORLD_CENTER.altitude, 1500);
   }, [resetToWorld, flyTo]);
 
-  // Polygon styling logic
-  const getPolygonCapColor = useCallback(
+  // Idempotent hover handler to prevent React re-render cascades
+  const handlePolygonHover = useCallback((newPolygon) => {
+    setHoveredPolygon((prev) => {
+      if ((!prev && !newPolygon) || (prev && newPolygon && prev.id === newPolygon.id)) {
+        return prev;
+      }
+      return newPolygon;
+    });
+  }, []);
+
+  // Polygon styling logic - Solid opaque black landmasses with crisp vector outlines
+  const getPolygonCapColor = useCallback(() => '#060a14', []);
+  const getPolygonSideColor = useCallback(() => '#060a14', []);
+  const getPolygonStrokeColor = useCallback(
     (polygon) => {
       if (hoveredPolygon && hoveredPolygon.id === polygon.id) {
-        return 'rgba(59, 130, 246, 0.5)'; // Active hover blue
+        return 'rgba(147, 197, 253, 0.95)'; // Bright blue hover border
       }
-      
-      const continent = polygon.continent || getContinentForFeature(polygon);
-      const countryName = polygon.properties?.name;
-
-      if (selectedRegion === 'country' && selectedRegionName === countryName) {
-        return 'rgba(99, 102, 241, 0.65)'; // Indigo selected country
-      }
-      if (selectedRegion === 'continent' && selectedRegionName === continent) {
-        return 'rgba(59, 130, 246, 0.28)'; // Subtle blue highlighted continent
-      }
-
-      return 'rgba(255, 255, 255, 0.08)'; // Default translucent country cap
+      return 'rgba(255, 255, 255, 0.7)'; // Crisp clean white country outline
     },
-    [hoveredPolygon, selectedRegion, selectedRegionName]
+    [hoveredPolygon]
   );
-
-  const getPolygonSideColor = useCallback(() => 'rgba(15, 23, 42, 0.15)', []);
-  const getPolygonStrokeColor = useCallback(() => 'rgba(255, 255, 255, 0.25)', []);
 
   // Calculate centroids for 3D globe text labels
   const countryLabels = useMemo(() => {
@@ -137,7 +135,7 @@ export function useGlobeInteraction(globeRef) {
     countryPolygons,
     countryLabels,
     hoveredPolygon,
-    setHoveredPolygon,
+    handlePolygonHover,
     handlePolygonClick,
     handleResetToWorld,
     getPolygonCapColor,

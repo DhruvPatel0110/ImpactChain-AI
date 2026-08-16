@@ -5,6 +5,12 @@ export const useGlobeStore = create((set) => ({
   selectedRegionName: '',
   cameraPosition: { lat: 20, lng: 0, altitude: 2.5 },
   dashboardOpen: false,
+  selectedEventId: null,
+
+  setSelectedEvent: (eventId) =>
+    set(() => ({
+      selectedEventId: eventId,
+    })),
 
   setSelectedRegion: (type, name, position = null) =>
     set((state) => ({
@@ -27,6 +33,7 @@ export const useGlobeStore = create((set) => ({
     set(() => ({
       selectedRegion: null,
       selectedRegionName: '',
+      selectedEventId: null,
       cameraPosition: { lat: 20, lng: 0, altitude: 2.5 },
     })),
 }));
