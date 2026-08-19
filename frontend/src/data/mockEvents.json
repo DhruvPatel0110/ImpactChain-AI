@@ -10,6 +10,7 @@
       { "country": "Iran", "lat": 35.67, "lng": 51.39 },
       { "country": "UAE", "lat": 24.45, "lng": 54.37 }
     ],
+    "pinCoordinates": { "lat": 35.67, "lng": 51.39, "label": "Tehran, Iran" },
     "ringSize": 60,
     "pulseBehavior": "fast-blink"
   },
@@ -22,6 +23,7 @@
     "coordinates": [
       { "country": "Colombia", "lat": 4.57, "lng": -74.30 }
     ],
+    "pinCoordinates": { "lat": 4.71, "lng": -74.07, "label": "Bogotá, Colombia" },
     "ringSize": 50,
     "pulseBehavior": "fast-blink"
   },
@@ -34,6 +36,7 @@
     "coordinates": [
       { "country": "Pakistan", "lat": 33.68, "lng": 73.16 }
     ],
+    "pinCoordinates": { "lat": 33.69, "lng": 73.04, "label": "Islamabad, Pakistan" },
     "ringSize": 55,
     "pulseBehavior": "steady-pulse"
   },
@@ -46,6 +49,7 @@
     "coordinates": [
       { "country": "Afghanistan", "lat": 34.53, "lng": 69.18 }
     ],
+    "pinCoordinates": { "lat": 34.53, "lng": 69.17, "label": "Kabul, Afghanistan" },
     "ringSize": 50,
     "pulseBehavior": "steady-pulse"
   },
@@ -58,6 +62,7 @@
     "coordinates": [
       { "country": "Ukraine", "lat": 48.38, "lng": 31.17 }
     ],
+    "pinCoordinates": { "lat": 50.45, "lng": 30.52, "label": "Kyiv, Ukraine" },
     "ringSize": 60,
     "pulseBehavior": "steady-pulse"
   },
@@ -70,6 +75,7 @@
     "coordinates": [
       { "country": "India", "lat": 28.61, "lng": 77.23 }
     ],
+    "pinCoordinates": { "lat": 28.61, "lng": 77.21, "label": "New Delhi, India" },
     "ringSize": 70,
     "pulseBehavior": "slow-pulse"
   },
@@ -82,6 +88,7 @@
     "coordinates": [
       { "country": "Russia", "lat": 55.75, "lng": 37.62 }
     ],
+    "pinCoordinates": { "lat": 55.76, "lng": 37.62, "label": "Moscow, Russia" },
     "ringSize": 80,
     "pulseBehavior": "slow-pulse"
   },
@@ -94,6 +101,7 @@
     "coordinates": [
       { "country": "Japan", "lat": 35.68, "lng": 139.69 }
     ],
+    "pinCoordinates": { "lat": 35.68, "lng": 139.69, "label": "Tokyo, Japan" },
     "ringSize": 65,
     "pulseBehavior": "slow-pulse"
   }

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ShieldAlert, Activity, AlertTriangle, Radio, ChevronRight, Eye } from 'lucide-react';
+import { ShieldAlert, Activity, AlertTriangle, Radio, ChevronRight, Eye, MapPin } from 'lucide-react';
 import { useGlobeStore } from '../../state/globeStore';
 
 /**
@@ -57,13 +57,13 @@ export const TIER_CONFIG = {
 export const HIGHLIGHT_KEYFRAME_STYLES = `
   @keyframes fastBlink {
     0%, 100% {
-      opacity: 0.8;
+      opacity: 0.85;
       box-shadow: 0 0 16px rgba(255, 0, 0, 0.85), inset 0 0 10px rgba(255, 0, 0, 0.5);
       border-color: rgba(255, 50, 50, 0.95);
     }
     50% {
-      opacity: 0.15;
-      box-shadow: 0 0 3px rgba(255, 0, 0, 0.2), inset 0 0 2px rgba(255, 0, 0, 0.1);
+      opacity: 0.2;
+      box-shadow: 0 0 4px rgba(255, 0, 0, 0.2), inset 0 0 2px rgba(255, 0, 0, 0.1);
       border-color: rgba(255, 50, 50, 0.3);
     }
   }
@@ -102,14 +102,19 @@ export const HIGHLIGHT_KEYFRAME_STYLES = `
     justify-content: center;
     cursor: pointer;
     user-select: none;
-    transform: translate(-50%, -50%);
     pointer-events: auto;
+    z-index: 100;
   }
 
   .ring-marker-container:hover .ring-tooltip {
     opacity: 1;
     transform: translateY(0) scale(1);
     pointer-events: auto;
+  }
+
+  .ring-marker-container:hover .ring-body-circle {
+    filter: brightness(1.25);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
   }
 
   .ring-tooltip {
@@ -121,7 +126,7 @@ export const HIGHLIGHT_KEYFRAME_STYLES = `
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
     white-space: nowrap;
-    z-index: 100;
+    z-index: 200;
   }
 `;
 
@@ -140,7 +145,7 @@ export function createRingElement(ring, onSelect = null) {
 
   // Outer Animated Ring Circle
   const ringEl = document.createElement('div');
-  ringEl.className = tierConfig.pulseClass;
+  ringEl.className = `ring-body-circle ${tierConfig.pulseClass}`;
   ringEl.style.width = `${size}px`;
   ringEl.style.height = `${size}px`;
   ringEl.style.borderRadius = '50%';
@@ -151,7 +156,7 @@ export function createRingElement(ring, onSelect = null) {
   ringEl.style.alignItems = 'center';
   ringEl.style.justifyContent = 'center';
   ringEl.style.boxSizing = 'border-box';
-  ringEl.style.transition = 'transform 0.2s ease';
+  ringEl.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
 
   // Inner Centroid Radar Dot
   const coreDot = document.createElement('div');
@@ -201,18 +206,20 @@ export function createRingElement(ring, onSelect = null) {
       </div>
       <div style="display: flex; items-center; justify-content: space-between; font-size: 11px; color: #94a3b8;">
         <span>Region: <b style="color: #cbd5e1;">${ring.country}</b></span>
-        <span style="color: #64748b; font-size: 10px;">Lat: ${ring.lat.toFixed(1)}°, Lng: ${ring.lng.toFixed(1)}°</span>
+        <span style="color: #38bdf8; font-weight: 600; font-size: 10px; margin-left: 8px;">CLICK TO PIN 📍</span>
       </div>
     </div>
   `;
   container.appendChild(tooltip);
 
-  // Click handler (Phase 3 readiness)
+  // Click handler (Triggers Phase 3 pin transition immediately)
   if (onSelect) {
-    container.addEventListener('click', (e) => {
+    const handleSelect = (e) => {
       e.stopPropagation();
+      e.preventDefault();
       onSelect(ring);
-    });
+    };
+    container.addEventListener('click', handleSelect);
   }
 
   return container;
@@ -221,28 +228,35 @@ export function createRingElement(ring, onSelect = null) {
 /**
  * Flattens array of events with multi-country coordinates into a flat list of ring markers
  */
-export function flattenEventsToRings(events) {
+export function flattenEventsToRings(events, pinnedEventId = null) {
   if (!Array.isArray(events)) return [];
-  return events.flatMap((event) =>
-    (event.coordinates || []).map((coord) => ({
-      eventId: event.id,
-      eventName: event.name,
-      tier: event.tier,
-      color: event.color,
-      country: coord.country,
-      lat: coord.lat,
-      lng: coord.lng,
-      ringSize: event.ringSize || 60,
-      pulseBehavior: event.pulseBehavior || 'steady-pulse',
-    }))
-  );
+  return events
+    .filter((event) => event.id !== pinnedEventId) // Phase 3: hide rings for the currently pinned event
+    .flatMap((event) =>
+      (event.coordinates || []).map((coord) => ({
+        eventId: event.id,
+        eventName: event.name,
+        tier: event.tier,
+        color: event.color,
+        country: coord.country,
+        lat: coord.lat,
+        lng: coord.lng,
+        ringSize: event.ringSize || 60,
+        pulseBehavior: event.pulseBehavior || 'steady-pulse',
+        _markerType: 'ring',
+      }))
+    );
 }
 
 /**
  * Custom React Hook to manage ring marker dataset and element creation
  */
 export function useHighlightLayer(events, onSelectRing = null) {
-  const ringMarkers = useMemo(() => flattenEventsToRings(events), [events]);
+  const pinnedEventId = useGlobeStore((state) => state.pinnedEventId);
+  const ringMarkers = useMemo(
+    () => flattenEventsToRings(events, pinnedEventId),
+    [events, pinnedEventId]
+  );
 
   const renderRingElement = useMemo(() => {
     return (ring) => createRingElement(ring, onSelectRing);
@@ -258,12 +272,13 @@ export function useHighlightLayer(events, onSelectRing = null) {
  * HighlightLayer Component:
  * - Injects GPU CSS keyframe rules for pulsing animations
  * - Provides an interactive Disruption Zones Intelligence HUD / Legend
- * - Integrates with Zustand store for selectedEventId tracking
+ * - Integrates with Zustand store for selectedEventId / pinnedEventId tracking
  */
-export default function HighlightLayer({ events = [], globeRef }) {
+export default function HighlightLayer({ events = [], globeRef, onSelectEvent }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const selectedEventId = useGlobeStore((state) => state.selectedEventId);
   const setSelectedEvent = useGlobeStore((state) => state.setSelectedEvent);
+  const pinnedEventId = useGlobeStore((state) => state.pinnedEventId);
 
   // Group events by severity tier for HUD breakdown
   const tierSummary = useMemo(() => {
@@ -275,16 +290,19 @@ export default function HighlightLayer({ events = [], globeRef }) {
     return summary;
   }, [events]);
 
-  // Quick focus camera to event coordinate
-  const handleFocusEvent = (event) => {
-    if (!event || !event.coordinates || event.coordinates.length === 0) return;
-    const firstCoord = event.coordinates[0];
-    setSelectedEvent(event.id);
-    if (globeRef && globeRef.current) {
-      globeRef.current.pointOfView(
-        { lat: firstCoord.lat, lng: firstCoord.lng, altitude: 1.4 },
-        1200
-      );
+  // Click on event in HUD list -> drill down directly to the pin with zero latency
+  const handleItemClick = (event) => {
+    if (onSelectEvent) {
+      onSelectEvent({ eventId: event.id, ...event });
+    } else {
+      setSelectedEvent(event.id);
+      const targetCoords = event.pinCoordinates || (event.coordinates && event.coordinates[0]);
+      if (targetCoords && globeRef && globeRef.current) {
+        globeRef.current.pointOfView(
+          { lat: targetCoords.lat, lng: targetCoords.lng, altitude: 0.8 },
+          600
+        );
+      }
     }
   };
 
@@ -339,48 +357,65 @@ export default function HighlightLayer({ events = [], globeRef }) {
             </div>
           </div>
 
-          {/* Event List with Click-to-Focus */}
+          {/* Event List with Click-to-Pin */}
           {isExpanded && (
             <div className="max-h-60 overflow-y-auto divide-y divide-slate-800/50 scrollbar-thin scrollbar-thumb-slate-700">
               {events.map((event) => {
                 const config = TIER_CONFIG[event.tier] || TIER_CONFIG['moderate'];
+                const isPinned = pinnedEventId === event.id;
                 const isSelected = selectedEventId === event.id;
 
                 return (
                   <div
                     key={event.id}
-                    onClick={() => handleFocusEvent(event)}
+                    onClick={() => handleItemClick(event)}
                     className={`p-2.5 flex items-center justify-between hover:bg-slate-800/60 cursor-pointer transition-all ${
-                      isSelected ? 'bg-blue-900/30 border-l-2 border-blue-400' : ''
+                      isPinned
+                        ? 'bg-blue-950/60 border-l-2 border-sky-400'
+                        : isSelected
+                        ? 'bg-blue-900/30 border-l-2 border-blue-400'
+                        : ''
                     }`}
                   >
                     <div className="flex flex-col gap-0.5 min-w-0 pr-2">
                       <div className="flex items-center gap-1.5">
-                        <span
-                          className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                            event.tier === 'critical-active'
-                              ? 'bg-red-500 animate-ping'
-                              : event.tier === 'major'
-                              ? 'bg-red-500'
-                              : 'bg-amber-500'
-                          }`}
-                        />
-                        <span className="text-xs font-semibold text-slate-200 truncate">
+                        {isPinned ? (
+                          <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-sky-400 animate-bounce" />
+                        ) : (
+                          <span
+                            className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                              event.tier === 'critical-active'
+                                ? 'bg-red-500 animate-ping'
+                                : event.tier === 'major'
+                                ? 'bg-red-500'
+                                : 'bg-amber-500'
+                            }`}
+                          />
+                        )}
+                        <span className={`text-xs font-semibold truncate ${isPinned ? 'text-sky-200' : 'text-slate-200'}`}>
                           {event.name}
                         </span>
                       </div>
                       <span className="text-[10px] text-slate-400 pl-3.5 truncate">
-                        {event.countries.join(', ')}
+                        {isPinned && event.pinCoordinates
+                          ? `📍 ${event.pinCoordinates.label}`
+                          : event.countries.join(', ')}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span
-                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${config.badgeColor}`}
-                      >
-                        {config.badgeText}
-                      </span>
-                      <Eye className="w-3.5 h-3.5 text-slate-500 hover:text-slate-200 transition-colors" />
+                      {isPinned ? (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider bg-sky-500/20 text-sky-300 border-sky-400/40">
+                          PINNED
+                        </span>
+                      ) : (
+                        <span
+                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${config.badgeColor}`}
+                        >
+                          {config.badgeText}
+                        </span>
+                      )}
+                      <Eye className={`w-3.5 h-3.5 transition-colors ${isPinned ? 'text-sky-400' : 'text-slate-500 hover:text-slate-200'}`} />
                     </div>
                   </div>
                 );
@@ -392,7 +427,7 @@ export default function HighlightLayer({ events = [], globeRef }) {
           <div className="px-3 py-2 bg-slate-950/60 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
             <div className="flex items-center gap-1">
               <Radio className="w-3 h-3 text-emerald-400" />
-              <span>8 Real-Time Event Zones</span>
+              <span>{events.length} Real-Time Event Zones</span>
             </div>
             <span className="text-slate-500">Live Pulse Layer</span>
           </div>

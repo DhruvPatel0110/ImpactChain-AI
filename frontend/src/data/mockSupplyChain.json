@@ -1,0 +1,459 @@
+{
+  "event_usa_iran": {
+    "eventId": "event_usa_iran",
+    "eventName": "USA-Iran Tensions & Strait of Hormuz Standoff",
+    "region": "Middle East / Persian Gulf",
+    "tier": "critical-active",
+    "severity": "Critical",
+    "summary": "Escalating geopolitical friction threatens maritime crude transport corridors through the Strait of Hormuz, causing severe volatility in global hydrocarbons and petrochemical derivative markets.",
+    "estimatedEconomicImpact": "$42.5B estimated exposure",
+    "disruptionLevel": "94% Risk Index",
+    "lastUpdated": "2026-08-19 06:30 UTC",
+    "affectedEntities": [
+      {
+        "id": "ent_crude_oil",
+        "name": "Crude Oil (Brent / WTI)",
+        "type": "commodity",
+        "impact": "Critical",
+        "image": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+        "description": "Global benchmark energy feedstock subject to immediate supply-risk premiums and tanker insurance spikes.",
+        "metrics": { "label": "Spot Volatility", "value": "+18.4%" }
+      },
+      {
+        "id": "ent_natural_gas",
+        "name": "Liquefied Natural Gas (LNG)",
+        "type": "commodity",
+        "impact": "Critical",
+        "image": "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=800&q=80",
+        "description": "Key export shipments from Persian Gulf facilities facing rerouting and transit bottlenecks.",
+        "metrics": { "label": "Delivery Delay", "value": "+6-10 Days" }
+      },
+      {
+        "id": "ent_petrochem",
+        "name": "Petrochemicals & Polymers",
+        "type": "industry",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=800&q=80",
+        "description": "Downstream plastics, synthetic rubbers, and fertilizer feedstocks affected by refinery disruptions.",
+        "metrics": { "label": "Output Capacity", "value": "-12% Regional" }
+      },
+      {
+        "id": "ent_aramco_partners",
+        "name": "Gulf Refining Consortia",
+        "type": "company",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=800&q=80",
+        "description": "Refinery operations adjusting crude distribution and scheduling war-risk insured carriers.",
+        "metrics": { "label": "Freight Premium", "value": "+45%" }
+      },
+      {
+        "id": "ent_maritime_freight",
+        "name": "Global Tanker Fleet Logistics",
+        "type": "route",
+        "impact": "Critical",
+        "image": "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=800&q=80",
+        "description": "VLCC tanker transits slowing near the Strait of Hormuz with extensive Cape of Good Hope rerouting.",
+        "metrics": { "label": "Route Diverted", "value": "38% Fleet" }
+      },
+      {
+        "id": "ent_aviation_fuel",
+        "name": "Jet Fuel (Kerosene-type)",
+        "type": "commodity",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80",
+        "description": "Aviation fuel hubs in Dubai and Doha re-evaluating bunkering supply safety margins.",
+        "metrics": { "label": "Surcharge Estimate", "value": "+9.1%" }
+      }
+    ],
+    "supplyRoutes": [
+      { "name": "Strait of Hormuz Transit Corridor", "status": "Congested", "risk": "Critical" },
+      { "name": "Fujairah Bunkering Hub", "status": "Diverted", "risk": "High" },
+      { "name": "Cape of Good Hope Alternative", "status": "Operational", "risk": "Medium" }
+    ],
+    "impactTimeline": [
+      { "time": "02 Hours Ago", "event": "Maritime security alert escalated to Tier 1 in Hormuz sector" },
+      { "time": "08 Hours Ago", "event": "Insurance underwriters levy 50bps war-risk cargo surcharge" },
+      { "time": "24 Hours Ago", "event": "Spot crude volatility breaches 3-month high" }
+    ]
+  },
+  "event_colombia_earthquake": {
+    "eventId": "event_colombia_earthquake",
+    "eventName": "Colombia Magnitude 7.2 Earthquake",
+    "region": "Andean Region / Cundinamarca",
+    "tier": "critical-active",
+    "severity": "Critical",
+    "summary": "Severe seismic shock has disrupted highway transport corridors, regional electrical grids, and processing mills across key agricultural and mineral export hubs.",
+    "estimatedEconomicImpact": "$8.7B estimated damage",
+    "disruptionLevel": "88% Risk Index",
+    "lastUpdated": "2026-08-19 06:15 UTC",
+    "affectedEntities": [
+      {
+        "id": "ent_arabica_coffee",
+        "name": "Specialty Arabica Coffee",
+        "type": "commodity",
+        "impact": "Critical",
+        "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
+        "description": "Highland processing cooperatives experience washed bean drying halts and warehouse damage.",
+        "metrics": { "label": "Contract Delay", "value": "14-21 Days" }
+      },
+      {
+        "id": "ent_emeralds",
+        "name": "Rough & Cut Emeralds",
+        "type": "commodity",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1615655406736-b37c4fabf923?auto=format&fit=crop&w=800&q=80",
+        "description": "Boyacá mining veins closed for structural assessment; international auctions suspended.",
+        "metrics": { "label": "Mine Operations", "value": "Temporarily Halted" }
+      },
+      {
+        "id": "ent_cut_flowers",
+        "name": "Fresh Cut Flowers (Floriculture)",
+        "type": "commodity",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=800&q=80",
+        "description": "Perishable refrigerated logistics from Bogotá savanna to El Dorado airport disrupted.",
+        "metrics": { "label": "Cold-Chain", "value": "-35% Capacity" }
+      },
+      {
+        "id": "ent_coal_rail",
+        "name": "Cerrejón Thermal Coal Freight",
+        "type": "industry",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=800&q=80",
+        "description": "Regional rail lines undergoing bridge integrity inspections prior to re-opening.",
+        "metrics": { "label": "Line Clearance", "value": "In Progress" }
+      },
+      {
+        "id": "ent_buenaventura_port",
+        "name": "Port of Buenaventura Access",
+        "type": "route",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80",
+        "description": "Landslides on the Western Cordillera corridor blocking heavy container truck convoys.",
+        "metrics": { "label": "Road Clearance", "value": "48h Estimate" }
+      },
+      {
+        "id": "ent_ecopetrol_pipeline",
+        "name": "Ocensa Pipeline Network",
+        "type": "company",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=800&q=80",
+        "description": "Emergency automatic valve shutdowns initiated; sensors reporting no major ruptures.",
+        "metrics": { "label": "Flow Rate", "value": "Throttled 40%" }
+      }
+    ],
+    "supplyRoutes": [
+      { "name": "Bogotá - Buenaventura Highway", "status": "Blocked", "risk": "Critical" },
+      { "name": "El Dorado Air Cargo Terminal", "status": "Operational", "risk": "Medium" },
+      { "name": "Magdalena River Barge Route", "status": "Operational", "risk": "Low" }
+    ],
+    "impactTimeline": [
+      { "time": "01 Hour Ago", "event": "National Emergency Operations Center issues transport priority mandate" },
+      { "time": "04 Hours Ago", "event": "Landslides clear operations mobilized on highway Route 40" },
+      { "time": "06 Hours Ago", "event": "M7.2 earthquake epicenter recorded 35km SW of Bogotá" }
+    ]
+  },
+  "event_pakistan": {
+    "eventId": "event_pakistan",
+    "eventName": "Pakistan Supply & Trade Instability",
+    "region": "South Asia / Indus Basin",
+    "tier": "major",
+    "severity": "Major",
+    "summary": "Civil instability and power supply rationing have throttled raw textile spinning mills and disrupted fertilizer distribution across the Punjab agricultural belt.",
+    "estimatedEconomicImpact": "$6.2B annualized drag",
+    "disruptionLevel": "72% Risk Index",
+    "lastUpdated": "2026-08-19 05:45 UTC",
+    "affectedEntities": [
+      {
+        "id": "ent_raw_cotton",
+        "name": "Raw Cotton & Yarn",
+        "type": "commodity",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?auto=format&fit=crop&w=800&q=80",
+        "description": "Ginning mills operating on curtailed schedules, impacting South Asian spinning contracts.",
+        "metrics": { "label": "Spot Pricing", "value": "+8.7%" }
+      },
+      {
+        "id": "ent_textile_garments",
+        "name": "Ready-Made Garments (RMG)",
+        "type": "industry",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=800&q=80",
+        "description": "Export orders for European and North American fast-fashion retail facing production lead delays.",
+        "metrics": { "label": "Backlog", "value": "12-18 Days" }
+      },
+      {
+        "id": "ent_basmati_rice",
+        "name": "Super Kernel Basmati Rice",
+        "type": "commodity",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80",
+        "description": "Milling facilities experiencing power blackouts, slowing container stuffing at Karachi.",
+        "metrics": { "label": "FOB Karachi", "value": "+5.3%" }
+      },
+      {
+        "id": "ent_port_qasim",
+        "name": "Port Qasim Container Terminal",
+        "type": "route",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80",
+        "description": "Customs clearance slowdowns resulting in mild yard container congestion.",
+        "metrics": { "label": "Dwell Time", "value": "6.8 Days" }
+      }
+    ],
+    "supplyRoutes": [
+      { "name": "National Highway N-5 Freight Corridor", "status": "Congested", "risk": "High" },
+      { "name": "Karachi Port Berth Logistics", "status": "Operational", "risk": "Medium" }
+    ],
+    "impactTimeline": [
+      { "time": "12 Hours Ago", "event": "Spinners association appeals for priority power allocation" },
+      { "time": "1 Day Ago", "event": "Karachi customs clearance backlog reaches 4,200 TEUs" }
+    ]
+  },
+  "event_afghanistan": {
+    "eventId": "event_afghanistan",
+    "eventName": "Afghanistan Cross-Border Trade Disruption",
+    "region": "Central Asia / Hindu Kush",
+    "tier": "major",
+    "severity": "Major",
+    "summary": "Border checkpoint restrictions and transit tariff disagreements have congested dry fruit exports and halted mineral prospecting supplies.",
+    "estimatedEconomicImpact": "$1.4B localized impact",
+    "disruptionLevel": "68% Risk Index",
+    "lastUpdated": "2026-08-19 04:00 UTC",
+    "affectedEntities": [
+      {
+        "id": "ent_lithium_minerals",
+        "name": "Rare Minerals & Lithium Ore",
+        "type": "commodity",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=800&q=80",
+        "description": "Exploration concessions and raw ore transport frozen at northern border corridors.",
+        "metrics": { "label": "Shipment", "value": "Frozen" }
+      },
+      {
+        "id": "ent_dry_fruits",
+        "name": "Dry Fruits & Pine Nuts",
+        "type": "commodity",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1536591375315-1988d6896205?auto=format&fit=crop&w=800&q=80",
+        "description": "Perishable dried harvest trucks idling at Torkham border crossing.",
+        "metrics": { "label": "Truck Queue", "value": "1,200+ Units" }
+      },
+      {
+        "id": "ent_torkham_border",
+        "name": "Torkham Border Crossing",
+        "type": "route",
+        "impact": "Critical",
+        "image": "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=800&q=80",
+        "description": "Intermittent border gate closures causing multi-day customs halts.",
+        "metrics": { "label": "Border Gate", "value": "Intermittent" }
+      }
+    ],
+    "supplyRoutes": [
+      { "name": "Torkham - Peshawar Pass", "status": "Blocked", "risk": "Critical" },
+      { "name": "Hairatan Northern Rail Link", "status": "Operational", "risk": "Medium" }
+    ],
+    "impactTimeline": [
+      { "time": "18 Hours Ago", "event": "Border clearance talks stall on transit fee schedule" }
+    ]
+  },
+  "event_ukraine": {
+    "eventId": "event_ukraine",
+    "eventName": "Ukraine Black Sea & Agricultural Corridor Disruption",
+    "region": "Eastern Europe / Black Sea",
+    "tier": "major",
+    "severity": "Major",
+    "summary": "Port infrastructure attacks and marine war risk insurance conditions continue to constrain grain, sunflower oil, and neon gas exports to global semiconductor hubs.",
+    "estimatedEconomicImpact": "$31.8B global ripple",
+    "disruptionLevel": "84% Risk Index",
+    "lastUpdated": "2026-08-19 05:00 UTC",
+    "affectedEntities": [
+      {
+        "id": "ent_wheat_grain",
+        "name": "Milling Wheat & Corn",
+        "type": "commodity",
+        "impact": "Critical",
+        "image": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80",
+        "description": "Core breadbasket supplies to MENA and Mediterranean nations facing constrained vessel throughput.",
+        "metrics": { "label": "Grain Spread", "value": "+6.4%" }
+      },
+      {
+        "id": "ent_sunflower_oil",
+        "name": "Crude Sunflower Oil",
+        "type": "commodity",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?auto=format&fit=crop&w=800&q=80",
+        "description": "Global food manufacturing edible oil supplies substituting toward palm and soy.",
+        "metrics": { "label": "Global Share", "value": "35% At Risk" }
+      },
+      {
+        "id": "ent_neon_gas",
+        "name": "Semiconductor-Grade Neon Gas",
+        "type": "commodity",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+        "description": "Purification plants in Odesa supplying laser excimer gas for silicon chip lithography.",
+        "metrics": { "label": "Fab Buffer", "value": "4-6 Weeks" }
+      },
+      {
+        "id": "ent_danube_barges",
+        "name": "Danube River Port Logistics",
+        "type": "route",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?auto=format&fit=crop&w=800&q=80",
+        "description": "Izmail and Reni river ports handling max-capacity barge transshipments into Constanta.",
+        "metrics": { "label": "Capacity Load", "value": "98% Utilized" }
+      }
+    ],
+    "supplyRoutes": [
+      { "name": "Greater Odesa Deepwater Ports", "status": "Diverted", "risk": "High" },
+      { "name": "Danube River - Constanta Route", "status": "Operational", "risk": "Medium" },
+      { "name": "Western Rail Grain Corridors", "status": "Operational", "risk": "Medium" }
+    ],
+    "impactTimeline": [
+      { "time": "06 Hours Ago", "event": "Black Sea maritime convoy departs with 180k MT wheat" },
+      { "time": "1 Day Ago", "event": "Danube barge freight rates stabilize at elevated levels" }
+    ]
+  },
+  "event_india": {
+    "eventId": "event_india",
+    "eventName": "India Semiconductor & Pharmaceutical Supply Shifts",
+    "region": "South Asia / NCR & Gujarat",
+    "tier": "moderate",
+    "severity": "Moderate",
+    "summary": "Export quota adjustments on active pharmaceutical ingredients (APIs) and heavy monsoon logistics delays around JNPT port facilities.",
+    "estimatedEconomicImpact": "$4.5B market volume",
+    "disruptionLevel": "45% Risk Index",
+    "lastUpdated": "2026-08-19 03:30 UTC",
+    "affectedEntities": [
+      {
+        "id": "ent_active_pharma",
+        "name": "Active Pharmaceutical Ingredients (APIs)",
+        "type": "industry",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80",
+        "description": "Generic medicine manufacturers in US and EU monitoring batch export lead times from Hyderabad.",
+        "metrics": { "label": "Lead Time", "value": "+4 Days" }
+      },
+      {
+        "id": "ent_parboiled_rice",
+        "name": "Non-Basmati Parboiled Rice",
+        "type": "commodity",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=800&q=80",
+        "description": "Government tariff monitoring on food security exports maintaining steady price floor.",
+        "metrics": { "label": "Export Duty", "value": "20% Active" }
+      },
+      {
+        "id": "ent_jnpt_port",
+        "name": "Jawaharlal Nehru Port (JNPT)",
+        "type": "route",
+        "impact": "Low",
+        "image": "https://images.unsplash.com/photo-1524522173746-f628baad3644?auto=format&fit=crop&w=800&q=80",
+        "description": "Automated terminal gates functioning normally with minor monsoon feeder vessel delays.",
+        "metrics": { "label": "Turnaround", "value": "22 Hours" }
+      }
+    ],
+    "supplyRoutes": [
+      { "name": "Mumbai - JNPT Marine Corridor", "status": "Operational", "risk": "Low" },
+      { "name": "Delhi - Mumbai Industrial Corridor Rail", "status": "Operational", "risk": "Low" }
+    ],
+    "impactTimeline": [
+      { "time": "1 Day Ago", "event": "Pharma export board confirms Q3 generic supply commitments" }
+    ]
+  },
+  "event_russia": {
+    "eventId": "event_russia",
+    "eventName": "Russia Arctic & Hydrocarbon Trade Realignment",
+    "region": "Northern Eurasia / Urals & Baltic",
+    "tier": "moderate",
+    "severity": "Moderate",
+    "summary": "Sanctions-driven shadow fleet operations, Baltic port oil loadings, and Arctic LNG-2 transshipment rerouting toward Asia-Pacific buyers.",
+    "estimatedEconomicImpact": "$18.2B altered flows",
+    "disruptionLevel": "52% Risk Index",
+    "lastUpdated": "2026-08-19 02:00 UTC",
+    "affectedEntities": [
+      {
+        "id": "ent_urals_crude",
+        "name": "Urals Crude Discounted Flows",
+        "type": "commodity",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+        "description": "Long-distance tanker routes to Indian and Chinese refiners altering global tanker ton-mile demand.",
+        "metrics": { "label": "Ton-Mile Demand", "value": "+24% Global" }
+      },
+      {
+        "id": "ent_potash_fertilizer",
+        "name": "Potash & NPK Fertilizer",
+        "type": "commodity",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=800&q=80",
+        "description": "Fertilizer shipments routing via Baltic rail and third-party transshipment points.",
+        "metrics": { "label": "Global Price", "value": "+3.8%" }
+      },
+      {
+        "id": "ent_nickel_palladium",
+        "name": "Refined Nickel & Palladium",
+        "type": "commodity",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1535813547-99c456a41d4a?auto=format&fit=crop&w=800&q=80",
+        "description": "Norilsk mining outputs rerouting settlement channels for European EV battery manufacturers.",
+        "metrics": { "label": "LME Warehouse", "value": "Stable" }
+      }
+    ],
+    "supplyRoutes": [
+      { "name": "Northern Sea Route Arctic Passage", "status": "Operational", "risk": "Medium" },
+      { "name": "Primorsk Baltic Oil Terminal", "status": "Operational", "risk": "Medium" }
+    ],
+    "impactTimeline": [
+      { "time": "2 Days Ago", "event": "Arctic tanker convoy completes eastern passage to Shandong" }
+    ]
+  },
+  "event_japan": {
+    "eventId": "event_japan",
+    "eventName": "Japan Tech & Automotive Precision Components",
+    "region": "East Asia / Tokyo & Nagoya",
+    "tier": "moderate",
+    "severity": "Moderate",
+    "summary": "Regional semiconductor wafer fab scheduling, yen exchange rate fluctuations, and coastal shipping adjustments for specialized electronics tooling.",
+    "estimatedEconomicImpact": "$7.9B component value",
+    "disruptionLevel": "38% Risk Index",
+    "lastUpdated": "2026-08-19 01:15 UTC",
+    "affectedEntities": [
+      {
+        "id": "ent_silicon_wafers",
+        "name": "Semiconductor Silicon Wafers (300mm)",
+        "type": "industry",
+        "impact": "High",
+        "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?auto=format&fit=crop&w=800&q=80",
+        "description": "Shin-Etsu and SUMCO wafer fabrication facilities operating at optimal yields with tight forward allocations.",
+        "metrics": { "label": "Allocation", "value": "99% Committed" }
+      },
+      {
+        "id": "ent_auto_microcontrollers",
+        "name": "Automotive MCUs & Sensors",
+        "type": "company",
+        "impact": "Medium",
+        "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+        "description": "Automotive tier-1 suppliers in Aichi maintaining 60-day safety stock for export assembly lines.",
+        "metrics": { "label": "Safety Buffer", "value": "58 Days" }
+      },
+      {
+        "id": "ent_yokohama_port",
+        "name": "Port of Yokohama Container Gate",
+        "type": "route",
+        "impact": "Low",
+        "image": "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80",
+        "description": "High-efficiency automated container handling operating without delay.",
+        "metrics": { "label": "Terminal Status", "value": "Full Flow" }
+      }
+    ],
+    "supplyRoutes": [
+      { "name": "Tokyo Bay Deepwater Channel", "status": "Operational", "risk": "Low" },
+      { "name": "Trans-Pacific Auto Ro-Ro Service", "status": "Operational", "risk": "Low" }
+    ],
+    "impactTimeline": [
+      { "time": "1 Day Ago", "event": "Monthly semiconductor equipment book-to-bill ratio reported at 1.08" }
+    ]
+  }
+}
