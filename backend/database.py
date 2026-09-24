@@ -40,11 +40,15 @@ CREATE TABLE IF NOT EXISTS articles (
     event_category  TEXT,
     is_relevant     BOOLEAN,
     confidence      REAL,
+    relevance_score REAL,
+    disruption_type TEXT,
     url             TEXT,
     full_json       TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_article_relevance ON articles(is_relevant, confidence);
+CREATE INDEX IF NOT EXISTS idx_article_score ON articles(relevance_score);
+CREATE INDEX IF NOT EXISTS idx_article_disruption ON articles(disruption_type);
 CREATE INDEX IF NOT EXISTS idx_article_event_category ON articles(event_category);
 
 -- ============================================================
@@ -165,6 +169,12 @@ class MasterDB:
         """Create all tables if they don't exist."""
         cursor = self.conn.cursor()
         cursor.executescript(_SCHEMA_SQL)
+        # Safe migration: add relevance_score and disruption_type columns if they don't exist
+        for col_name, col_type in [("relevance_score", "REAL"), ("disruption_type", "TEXT")]:
+            try:
+                cursor.execute(f"ALTER TABLE articles ADD COLUMN {col_name} {col_type}")
+            except sqlite3.OperationalError:
+                pass  # Column already exists
         self.conn.commit()
         logger.info(f"Database schema initialized at {self.db_path}")
 
@@ -219,9 +229,11 @@ class MasterDB:
         try:
             # Route low-confidence records
             is_relevant = normalized_record.get("is_relevant", False)
-            confidence = normalized_record.get("confidence", 0.0)
+            confidence = float(normalized_record.get("confidence", 0.0))
+            relevance_score = float(normalized_record.get("relevance_score") if normalized_record.get("relevance_score") is not None else confidence)
+            disruption_type = str(normalized_record.get("disruption_type") or "none").lower()
 
-            if not is_relevant and confidence < 0.40:
+            if not is_relevant and (confidence < 0.40 or relevance_score < 0.50):
                 return self._insert_low_confidence(normalized_record, now)
 
             # Full insert in a single transaction
@@ -233,8 +245,8 @@ class MasterDB:
                 """
                 INSERT OR IGNORE INTO articles
                     (article_id, title, source_name, source_type, published_at,
-                     ingested_at, event_category, is_relevant, confidence, url, full_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ingested_at, event_category, is_relevant, confidence, relevance_score, disruption_type, url, full_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     article_id,
@@ -246,6 +258,8 @@ class MasterDB:
                     normalized_record.get("event_category", ""),
                     is_relevant,
                     confidence,
+                    relevance_score,
+                    disruption_type,
                     normalized_record.get("url", ""),
                     full_json,
                 ),
@@ -423,12 +437,15 @@ class MasterDB:
 
             # Still insert into articles table for dedup tracking
             full_json = json.dumps(record, ensure_ascii=False)
+            relevance_score = float(record.get("relevance_score") if record.get("relevance_score") is not None else record.get("confidence", 0.0))
+            disruption_type = str(record.get("disruption_type") or "none").lower()
+
             cursor.execute(
                 """
                 INSERT OR IGNORE INTO articles
                     (article_id, title, source_name, source_type, published_at,
-                     ingested_at, event_category, is_relevant, confidence, url, full_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ingested_at, event_category, is_relevant, confidence, relevance_score, disruption_type, url, full_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     record.get("article_id", ""),
@@ -440,6 +457,8 @@ class MasterDB:
                     record.get("event_category", ""),
                     False,
                     record.get("confidence", 0.0),
+                    relevance_score,
+                    disruption_type,
                     record.get("url", ""),
                     full_json,
                 ),
@@ -463,7 +482,7 @@ class MasterDB:
             self.conn.commit()
             logger.info(
                 f"Low-confidence article {record.get('article_id', '')} "
-                f"(confidence={record.get('confidence', 0):.2f}) → low_confidence_queue"
+                f"(confidence={record.get('confidence', 0):.2f}, score={relevance_score:.2f}) → low_confidence_queue"
             )
             return True
         except Exception as e:
@@ -489,8 +508,8 @@ class MasterDB:
                 """
                 INSERT OR IGNORE INTO articles
                     (article_id, title, source_name, source_type, published_at,
-                     ingested_at, event_category, is_relevant, confidence, url, full_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ingested_at, event_category, is_relevant, confidence, relevance_score, disruption_type, url, full_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     article_id,
@@ -502,6 +521,8 @@ class MasterDB:
                     "",
                     False,
                     0.0,
+                    0.0,
+                    "none",
                     article.get("url", ""),
                     json.dumps(article, ensure_ascii=False),
                 ),
@@ -528,3 +549,58 @@ class MasterDB:
             logger.error(f"Error storing failed extraction: {e}", exc_info=True)
             self.conn.rollback()
             return False
+
+    # ------------------------------------------------------------------
+    # Dynamic article filtering query
+    # ------------------------------------------------------------------
+
+    def fetch_articles_with_filter(
+        self,
+        relevant_only: bool = True,
+        min_score: float = 0.5,
+        disruption_type: str | None = None,
+        limit: int = 50,
+    ) -> list[dict]:
+        """
+        Query articles with dynamic filtering.
+
+        Args:
+            relevant_only: Only return relevant articles (score >= min_score).
+            min_score: Minimum relevance score threshold (0.0 - 1.0).
+            disruption_type: Filter by specific disruption type (geopolitical, etc).
+            limit: Maximum records to return.
+
+        Returns:
+            List of normalized article dicts.
+        """
+        cursor = self.conn.cursor()
+        query = "SELECT full_json, relevance_score, disruption_type, is_relevant, published_at, ingested_at FROM articles WHERE 1=1"
+        params = []
+
+        if relevant_only:
+            query += " AND is_relevant = 1 AND (COALESCE(relevance_score, confidence, 0.0) >= ?)"
+            params.append(min_score)
+
+        if disruption_type:
+            query += " AND LOWER(COALESCE(disruption_type, 'none')) = ?"
+            params.append(disruption_type.strip().lower())
+
+        query += " ORDER BY COALESCE(relevance_score, confidence, 0.0) DESC, ingested_at DESC LIMIT ?"
+        params.append(limit)
+
+        cursor.execute(query, tuple(params))
+        rows = cursor.fetchall()
+
+        articles = []
+        for row in rows:
+            try:
+                item = json.loads(row["full_json"])
+                if row["relevance_score"] is not None and "relevance_score" not in item:
+                    item["relevance_score"] = row["relevance_score"]
+                if row["disruption_type"] and "disruption_type" not in item:
+                    item["disruption_type"] = row["disruption_type"]
+                articles.append(item)
+            except Exception as e:
+                logger.warning(f"Error decoding article json: {e}")
+
+        return articles

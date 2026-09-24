@@ -22,23 +22,18 @@ def merge_and_normalize(
     article: dict,
     spacy_scaffold: dict,
     groq_response: dict | None,
+    relevance_data: dict | None = None,
 ) -> dict | None:
     """
-    Merge article, spaCy scaffold, and Groq response into a canonical record.
+    Merge article, spaCy scaffold, Groq response, and dynamic relevance judgment
+    into a canonical record.
 
     Decision logic:
     - groq_response is None → return None (article rejected / extraction failed)
+    - relevance_data is provided and relevant is False → return None
     - is_supply_chain_relevant is False → return None (article not relevant)
-    - confidence < 0.40 → return record with is_relevant=False (→ low_confidence_queue)
+    - score / confidence < 0.50 → return record with is_relevant=False (→ low_confidence_queue)
     - Otherwise → return fully normalized record
-
-    Args:
-        article: Raw article dict from Step 1.1
-        spacy_scaffold: Entity scaffold from Step 1.2
-        groq_response: Parsed Groq response from Step 1.3, or None
-
-    Returns:
-        Normalized record dict, or None if article is rejected.
     """
     article_id = article.get("article_id", "unknown")
 
@@ -50,10 +45,20 @@ def merge_and_normalize(
         return None
 
     # ------------------------------------------------------------------
-    # Rejection: not supply-chain relevant
+    # Rejection: dynamic relevance scorer marked irrelevant
     # ------------------------------------------------------------------
-    is_relevant = groq_response.get("is_supply_chain_relevant", False)
-    if not is_relevant:
+    if relevance_data is not None and not relevance_data.get("relevant", True):
+        logger.info(
+            f"Article {article_id}: rejected by dynamic relevance scorer — "
+            f"reason: {relevance_data.get('reason')}"
+        )
+        return None
+
+    # ------------------------------------------------------------------
+    # Rejection: not supply-chain relevant (from Groq scaffold)
+    # ------------------------------------------------------------------
+    is_relevant = groq_response.get("is_supply_chain_relevant", True)
+    if not is_relevant and relevance_data is None:
         logger.info(
             f"Article {article_id}: rejected — not supply-chain relevant "
             f"(confidence={groq_response.get('confidence', 0)})"
@@ -61,9 +66,19 @@ def merge_and_normalize(
         return None
 
     # ------------------------------------------------------------------
-    # Extract confidence
+    # Extract confidence and relevance score
     # ------------------------------------------------------------------
     confidence = float(groq_response.get("confidence", 0.0))
+    if relevance_data is not None:
+        relevance_score = float(relevance_data.get("score", confidence))
+        disruption_type = str(relevance_data.get("disruption_type") or groq_response.get("event_category", "other")).lower()
+        affected_domains = relevance_data.get("affected_domains") or []
+        relevance_reason = str(relevance_data.get("reason", ""))
+    else:
+        relevance_score = confidence
+        disruption_type = str(groq_response.get("event_category", "other")).lower()
+        affected_domains = []
+        relevance_reason = ""
 
     # ------------------------------------------------------------------
     # Build the normalized record
@@ -83,6 +98,12 @@ def merge_and_normalize(
         ]
     else:
         primary_commodities = []
+
+    # Merge any affected domains into primary commodities if not already present
+    for domain in affected_domains:
+        d_clean = str(domain).strip().lower()
+        if d_clean and d_clean not in primary_commodities:
+            primary_commodities.append(d_clean)
 
     # Filter irrelevant commodities
     primary_commodities = filter_commodities(primary_commodities)
@@ -132,6 +153,8 @@ def merge_and_normalize(
     # ------------------------------------------------------------------
     # Assemble canonical normalized record
     # ------------------------------------------------------------------
+    is_record_relevant = relevance_score >= 0.50 if relevance_data is not None else confidence >= 0.40
+
     normalized = {
         "article_id": article.get("article_id", ""),
         "source_name": article.get("source_name", ""),
@@ -141,8 +164,12 @@ def merge_and_normalize(
         "url": article.get("url", ""),
         "published_at": article.get("published_at", ""),
         "ingested_at": now,
-        "is_relevant": confidence >= 0.40,  # True only if above threshold
+        "is_relevant": is_record_relevant,
         "confidence": confidence,
+        "relevance_score": relevance_score,
+        "disruption_type": disruption_type,
+        "affected_domains": affected_domains,
+        "relevance_reason": relevance_reason,
         "event_category": event_category,
         "primary_commodities": primary_commodities,
         "all_entities": {
@@ -163,17 +190,17 @@ def merge_and_normalize(
     # ------------------------------------------------------------------
     # Route based on confidence
     # ------------------------------------------------------------------
-    if confidence < 0.40:
+    if not is_record_relevant:
         normalized["is_relevant"] = False
         logger.info(
-            f"Article {article_id}: low confidence ({confidence:.2f}) "
+            f"Article {article_id}: low relevance score ({relevance_score:.2f}) "
             f"→ will be stored in low_confidence_queue"
         )
     else:
         logger.info(
             f"Article {article_id}: normalized successfully — "
-            f"relevant=True, confidence={confidence:.2f}, "
-            f"category={event_category}, "
+            f"relevant=True, score={relevance_score:.2f}, "
+            f"disruption_type={disruption_type}, "
             f"commodities={primary_commodities}, "
             f"relationships={len(relationships)}"
         )

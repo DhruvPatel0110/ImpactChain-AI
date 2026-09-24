@@ -30,8 +30,13 @@ from database import MasterDB
 from spacy_extractor import load_spacy_model, extract_entities_spacy
 from groq_extractor import extract_relationships_groq
 from normalizer import merge_and_normalize
+from relevance_scorer import RelevanceScorer
+from monitoring.relevance_monitor import RelevanceMonitor
 
 logger = logging.getLogger(__name__)
+
+relevance_scorer = RelevanceScorer()
+relevance_monitor = RelevanceMonitor()
 
 
 # ============================================================================
@@ -361,6 +366,41 @@ async def run_phase_1():
                 # Step 1.2: spaCy entity extraction
                 spacy_scaffold = extract_entities_spacy(article)
 
+                # Collect candidate entities for relevance judge
+                raw_entities = spacy_scaffold.get("raw_entities", {})
+                candidate_entities = []
+                for k in ["organizations", "locations", "products_mentioned", "events_mentioned"]:
+                    candidate_entities.extend(raw_entities.get(k, []))
+
+                # Step 1.2b: Dynamic semantic relevance scoring
+                summary_text = article.get("description") or article.get("content") or ""
+                relevance_result = await relevance_scorer.score_article_async(
+                    headline=article.get("title", ""),
+                    summary=summary_text,
+                    entities=candidate_entities,
+                )
+
+                is_relevant = bool(relevance_result.get("relevant", False))
+                score = float(relevance_result.get("score", 0.0))
+                disruption_type = str(relevance_result.get("disruption_type", "none"))
+
+                relevance_monitor.record(article, is_relevant, score, disruption_type)
+
+                # Filter out irrelevant or low confidence disruptions
+                if not is_relevant:
+                    logger.info(
+                        f"[FILTERED] {title}... → {relevance_result.get('reason')} (score: {score})"
+                    )
+                    rejected += 1
+                    continue
+
+                if score < 0.5:
+                    logger.info(
+                        f"[LOW_CONFIDENCE] {title}... (score: {score}) → {relevance_result.get('reason')}"
+                    )
+                    rejected += 1
+                    continue
+
                 # Step 1.3: Groq relationship extraction
                 groq_response = await extract_relationships_groq(article, spacy_scaffold)
 
@@ -374,8 +414,10 @@ async def run_phase_1():
                     failed += 1
                     continue
 
-                # Step 1.4: Merge and normalize
-                normalized = merge_and_normalize(article, spacy_scaffold, groq_response)
+                # Step 1.4: Merge and normalize with relevance enrichment
+                normalized = merge_and_normalize(
+                    article, spacy_scaffold, groq_response, relevance_data=relevance_result
+                )
 
                 if normalized is None:
                     # Article was rejected (not relevant)
@@ -411,6 +453,7 @@ async def run_phase_1():
         db.close()
 
     # Summary
+    monitor_stats = relevance_monitor.report()
     logger.info("=" * 60)
     logger.info("PHASE 1: INGESTION PIPELINE — COMPLETE")
     logger.info(f"  Articles fetched:       {len(raw_articles)}")
@@ -419,4 +462,6 @@ async def run_phase_1():
     logger.info(f"  Low confidence (queue):  {low_conf}")
     logger.info(f"  Rejected (not relevant): {rejected}")
     logger.info(f"  Failed extractions:      {failed}")
+    logger.info(f"  Filtering ratio:         {monitor_stats.get('filtering_ratio')}")
+    logger.info(f"  Disruptions by type:     {monitor_stats.get('by_disruption_type')}")
     logger.info("=" * 60)

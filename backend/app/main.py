@@ -45,7 +45,8 @@ from app.services.normalization import (
 )
 
 # Phase 1, 2A, 2B imports
-from ingestion import run_phase_1
+from database import MasterDB
+from ingestion import run_phase_1, relevance_monitor
 from phase2 import run_phase2a, run_phase2b
 from master_graph import MasterGraph
 
@@ -209,10 +210,45 @@ def get_graph_stats():
 # ============================================================================
 
 @app.get("/api/articles")
-async def get_articles():
-    """Legacy endpoint — raw RSS articles."""
-    articles = await rss_feed_service.fetch_articles()
-    return articles
+async def get_articles(
+    relevant_only: bool = Query(default=True, description="Filter only supply-chain relevant articles"),
+    min_score: float = Query(default=0.5, ge=0.0, le=1.0, description="Minimum relevance score threshold"),
+    disruption_type: str | None = Query(default=None, description="Filter by disruption type (geopolitical, natural_disaster, etc)"),
+    limit: int = Query(default=50, ge=1, le=500, description="Max articles to return"),
+):
+    """
+    Get articles with dynamic semantic relevance filtering.
+
+    Query params:
+    - relevant_only: Only return relevant articles (default: True)
+    - min_score: Minimum relevance score (0.0-1.0, default: 0.5)
+    - disruption_type: Filter by disruption type
+    - limit: Number of results
+    """
+    try:
+        db = MasterDB()
+        try:
+            articles = db.fetch_articles_with_filter(
+                relevant_only=relevant_only,
+                min_score=min_score,
+                disruption_type=disruption_type,
+                limit=limit,
+            )
+            # If database has no processed articles yet and relevant_only is False, fallback to raw RSS
+            if not articles and not relevant_only:
+                articles = await rss_feed_service.fetch_articles()
+            return articles
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to fetch articles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/monitoring/relevance")
+def get_relevance_monitoring_stats():
+    """Return live dynamic relevance filtering statistics."""
+    return relevance_monitor.report()
 
 
 @app.post("/api/pipeline/run")
