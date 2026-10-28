@@ -66,8 +66,8 @@ logging.basicConfig(
 # ---------------------------------------------------------------------------
 # Groq Models (Primary 70B, Fallback 8B with 500k TPD daily quota)
 # ---------------------------------------------------------------------------
-GROQ_MODEL: str = "llama-3.3-70b-versatile"
-FALLBACK_GROQ_MODEL: str = "llama-3.1-8b-instant"
+GROQ_MODEL: str = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+FALLBACK_GROQ_MODEL: str = os.getenv("FALLBACK_GROQ_MODEL", "llama-3.3-70b-versatile")
 
 # ---------------------------------------------------------------------------
 # NewsAPI Settings

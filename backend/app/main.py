@@ -45,16 +45,20 @@ from app.services.normalization import (
 )
 
 # Phase 1, 2A, 2B imports
+# Phase 1, 2A, 2B imports
 from database import MasterDB
 from ingestion import run_phase_1, relevance_monitor
 from phase2 import run_phase2a, run_phase2b
 from master_graph import MasterGraph
+from app.api.graph_api import router as graph_router
+import app.api.graph_api as graph_api_module
 
 app = FastAPI(
     title="ImpactChain AI",
     description="Supply-chain intelligence from real-time news signals",
     version="0.5.0",
 )
+app.include_router(graph_router)
 
 # ---------------------------------------------------------------------------
 # Application state — holds objects that persist across requests
@@ -203,6 +207,25 @@ def get_graph_stats():
     if master_graph is None:
         raise HTTPException(status_code=503, detail="Master graph not yet initialized")
     return master_graph.get_graph_stats()
+
+
+@app.get("/api/master_graph/hotspots")
+@app.get("/api/graph/hotspots")
+def get_globe_hotspots():
+    """
+    Return disruption hotspots for 3D globe visualization.
+    Each hotspot represents a region with supply chain disruptions.
+    """
+    master_graph = app_state.get("master_graph")
+    if master_graph is None:
+        master_graph = MasterGraph()
+        app_state["master_graph"] = master_graph
+        graph_api_module.master_graph_instance = master_graph
+    try:
+        return master_graph.get_hotspots_for_globe()
+    except Exception as e:
+        logger.error(f"Failed to generate globe hotspots: {e}")
+        raise HTTPException(status_code=500, detail=f"Hotspot generation failed: {str(e)}")
 
 
 # ============================================================================

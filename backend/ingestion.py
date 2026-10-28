@@ -384,6 +384,10 @@ async def run_phase_1():
                 score = float(relevance_result.get("score", 0.0))
                 disruption_type = str(relevance_result.get("disruption_type", "none"))
 
+                # Stage 2 logging requirement
+                print(f"Article: {article.get('title', '')[:70]} -> relevant={is_relevant}, score={score:.2f}")
+                logger.info(f"Article: {title} -> relevant={is_relevant}, score={score:.2f}")
+
                 relevance_monitor.record(article, is_relevant, score, disruption_type)
 
                 # Filter out irrelevant or low confidence disruptions

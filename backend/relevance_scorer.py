@@ -176,6 +176,9 @@ class RelevanceScorer:
                 if "429" in str(e) or "rate_limit" in str(e).lower():
                     logger.warning(f"RelevanceScorer: Rate limit on '{current_model}', switching to '{FALLBACK_GROQ_MODEL}'")
                     current_model = FALLBACK_GROQ_MODEL
+                elif "404" in str(e) or "model_not_found" in str(e).lower() or "does not exist" in str(e).lower():
+                    logger.warning(f"RelevanceScorer: Model '{current_model}' not found, switching to '{FALLBACK_GROQ_MODEL}'")
+                    current_model = FALLBACK_GROQ_MODEL
                 else:
                     logger.warning(f"RelevanceScorer error (attempt {attempt + 1}): {e}")
 

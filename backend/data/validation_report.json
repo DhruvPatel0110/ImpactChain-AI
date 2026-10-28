@@ -1,0 +1,94 @@
+{
+  "stage1": {
+    "iran_article": {
+      "headline": "Iran blocks Strait of Hormuz shipping lane amid military tensions",
+      "result": {
+        "relevant": true,
+        "score": 0.95,
+        "reason": "Iranian naval forces have restricted commercial passage through the Strait of Hormuz, causing immediate disruptions to crude oil tanker routes and escalating global oil price concerns.",
+        "disruption_type": "geopolitical",
+        "affected_domains": [
+          "oil",
+          "shipping"
+        ]
+      },
+      "duration_ms": 1228.67,
+      "status": "PASS"
+    },
+    "ed_sheeran_article": {
+      "headline": "Ed Sheeran's new stadium concert uses hologram semiconductor technology",
+      "result": {
+        "relevant": false,
+        "score": 0.1,
+        "reason": "The article describes a technology feature for a concert performance, not a supply chain disruption, shortage, or logistical failure.",
+        "disruption_type": "none",
+        "affected_domains": []
+      },
+      "duration_ms": 1548.33,
+      "status": "PASS"
+    },
+    "borderline_article": {
+      "headline": "Semiconductor exports may face new regulations under proposed trade framework",
+      "result": {
+        "relevant": false,
+        "score": 0.2,
+        "reason": "The article describes 'draft proposals' and 'considering' regulations, indicating a speculative or pre-implementation stage rather than an active supply chain disruption. No current shortage, halt, or confirmed regulatory enforcement is mentioned.",
+        "disruption_type": "none",
+        "affected_domains": []
+      },
+      "duration_ms": 575.77,
+      "status": "PASS"
+    },
+    "cache_verification": {
+      "first_call_ms": 1228.67,
+      "cached_call_ms": 0.087,
+      "results_identical": true,
+      "status": "PASS"
+    }
+  },
+  "stage2": {
+    "total_ingested": 24,
+    "stored_relevant": 12,
+    "filtered_irrelevant": 12,
+    "filtering_ratio": "50.0%",
+    "by_disruption_type": {
+      "geopolitical": 2,
+      "natural_disaster": 4,
+      "logistics": 3,
+      "industrial_failure": 2,
+      "commodity_crisis": 1
+    },
+    "status": "PASS"
+  },
+  "stage3": {
+    "master_graph_nodes": 39,
+    "master_graph_edges": 12,
+    "ed_sheeran_found": false,
+    "disruption_nodes_found": true,
+    "commodity_nodes_found": true,
+    "db_low_score_relevant_count": 0,
+    "db_none_type_relevant_count": 0,
+    "status": "PASS"
+  },
+  "stage4": {
+    "unfiltered_count": 12,
+    "filtered_count": 12,
+    "high_score_0.8_count": 12,
+    "geopolitical_count": 2,
+    "industrial_failure_count": 2,
+    "type_overlap_count": 0,
+    "status": "PASS"
+  },
+  "red_flags": {
+    "all_scores_0.5": "CLEAN",
+    "zero_percent_filtered": "CLEAN",
+    "hundred_percent_filtered": "CLEAN",
+    "ed_sheeran_in_graph": "CLEAN",
+    "cache_inconsistency": "CLEAN",
+    "groq_errors": "CLEAN"
+  },
+  "summary": {
+    "overall_result": "ALL 4 STAGES PASSED",
+    "completed_at": "2026-09-25 02:57:19 UTC"
+  }
+}

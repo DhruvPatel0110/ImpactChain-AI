@@ -254,6 +254,12 @@ async def extract_relationships_groq(
                     f"Switching fallback model to '{FALLBACK_GROQ_MODEL}'."
                 )
                 current_model = FALLBACK_GROQ_MODEL
+            elif "404" in str(e) or "model_not_found" in str(e).lower() or "does not exist" in str(e).lower():
+                logger.warning(
+                    f"Article {article_id}: Groq model '{current_model}' not found. "
+                    f"Switching fallback model to '{FALLBACK_GROQ_MODEL}'."
+                )
+                current_model = FALLBACK_GROQ_MODEL
             else:
                 logger.warning(
                     f"Article {article_id}: Groq API error "

@@ -89,6 +89,12 @@ class MasterGraph:
             self._load_last_processed_timestamp()
         )
 
+    async def load(self):
+        """Async compatibility wrapper for loading graph."""
+        self.graph = self._load_or_create()
+        self._last_processed_timestamp = self._load_last_processed_timestamp()
+        return self
+
     # ==================================================================
     # Initialization and Loading
     # ==================================================================
@@ -216,13 +222,23 @@ class MasterGraph:
         primary_commodities: list = article.get("primary_commodities") or []
         events_mentioned: list = all_entities.get("events_mentioned") or []
         relationships: list = article.get("relationships") or []
+        disruption_type: str = article.get("disruption_type") or "logistics"
+        published_at: str = (
+            article.get("published_at")
+            or datetime.now(timezone.utc).isoformat()
+        )
 
         # --- Part 1: Process entity roles → nodes ---
         for entity_name, role in entity_roles.items():
             if not entity_name:
                 continue
             node_type = _ROLE_TO_NODE_TYPE.get(role, "organization")
-            self._upsert_node(entity_name, node_type)
+            self._upsert_node(
+                entity_name,
+                node_type,
+                disruption_type=disruption_type,
+                last_updated=published_at,
+            )
 
         # --- Part 1b: Process primary commodities → commodity nodes ---
         for commodity in primary_commodities:
@@ -235,6 +251,18 @@ class MasterGraph:
             if not event:
                 continue
             self._upsert_node(str(event), "event")
+
+        # --- Part 1d: Process locations mentioned → region nodes ---
+        locations = all_entities.get("locations") or []
+        if isinstance(locations, list):
+            for loc in locations:
+                if loc and isinstance(loc, str):
+                    self._upsert_node(
+                        loc.strip().lower(),
+                        "region",
+                        disruption_type=disruption_type,
+                        last_updated=published_at,
+                    )
 
         # --- Part 2: Process relationships → edges ---
         for triple in relationships:
@@ -256,14 +284,30 @@ class MasterGraph:
             # Check for existing edge with same relationship type
             self._upsert_edge(source, target, rel_type)
 
-    def _upsert_node(self, name: str, node_type: str):
-        """Add a new node or increment an existing node's weight."""
+    def _upsert_node(self, name: str, node_type: str, **kwargs):
+        """Add a new node or increment an existing node's weight and article count."""
+        now_iso = datetime.now(timezone.utc).isoformat()
         if self.graph.has_node(name):
-            self.graph.nodes[name]["weight"] = (
-                self.graph.nodes[name].get("weight", 0) + 1
-            )
+            node = self.graph.nodes[name]
+            node["weight"] = node.get("weight", 0) + 1
+            node["article_count"] = node.get("article_count", 0) + 1
+            if "last_updated" in kwargs and kwargs["last_updated"]:
+                node["last_updated"] = kwargs["last_updated"]
+            if "disruption_type" in kwargs and kwargs["disruption_type"]:
+                node["disruption_type"] = kwargs["disruption_type"]
+            for k, v in kwargs.items():
+                if k not in ("last_updated", "disruption_type"):
+                    node[k] = v
         else:
-            self.graph.add_node(name, type=node_type, weight=1)
+            data = {
+                "type": node_type,
+                "weight": 1,
+                "article_count": 1,
+                "last_updated": kwargs.get("last_updated", now_iso),
+                "disruption_type": kwargs.get("disruption_type", "logistics"),
+                **kwargs,
+            }
+            self.graph.add_node(name, **data)
 
     def _upsert_edge(self, source: str, target: str, relationship_type: str):
         """
@@ -482,4 +526,261 @@ class MasterGraph:
             "nodes_by_type": nodes_by_type,
             "top_nodes_by_weight": top_nodes,
             "top_edges_by_weight": top_edges,
+        }
+
+    def get_hotspots_for_globe(self) -> dict:
+        """
+        Extract hotspots from master graph for globe visualization.
+
+        Returns:
+            dict with hotspots list, max intensity, timestamp, total disruptions
+        """
+        # Canonical geographic coordinates for supply-chain critical regions and choke points
+        REGION_COORDS = {
+            "iran": (32.4279, 53.6880),
+            "panama": (8.5380, -80.7821),
+            "panama canal": (8.5380, -80.7821),
+            "taiwan": (23.6978, 120.9605),
+            "usa": (37.0902, -95.7129),
+            "united states": (37.0902, -95.7129),
+            "russia": (61.5240, 105.3188),
+            "india": (20.5937, 78.9629),
+            "middle east": (25.0, 45.0),
+            "red sea": (20.0, 40.0),
+            "rotterdam": (51.9289, 4.2700),
+            "australia": (-25.2744, 133.7751),
+            "saudi arabia": (23.8859, 45.0792),
+            "china": (35.8617, 104.1954),
+            "brazil": (-14.2350, -51.9253),
+            "chile": (-35.6751, -71.5430),
+            "canada": (56.1304, -106.3468),
+            "germany": (51.1657, 10.4515),
+            "singapore": (1.3521, 103.8198),
+            "japan": (36.2048, 138.2529),
+            "south korea": (35.9078, 127.7669),
+            "egypt": (26.8206, 30.8025),
+            "suez canal": (30.7050, 32.3440),
+            "strait of hormuz": (26.5667, 56.2500),
+            "ukraine": (48.3794, 31.1656),
+            "yemen": (15.5527, 48.5164),
+            "malacca strait": (4.0, 100.0),
+            "shanghai": (31.2304, 121.4737),
+            "shenzhen": (22.5431, 114.0579),
+            "los angeles": (34.0522, -118.2437),
+            "houston": (29.7604, -95.3698),
+            "netherlands": (52.1326, 5.2913),
+            "persian gulf": (26.0, 52.0),
+        }
+
+        # Canonical baseline monitoring network across all 4 severity tiers
+        canonical_baselines = [
+            {
+                "id": "iran",
+                "latitude": 32.4279,
+                "longitude": 53.6880,
+                "article_count": 12,
+                "disruption_type": "geopolitical",
+                "label": "Iran (Geopolitical Crisis)",
+            },
+            {
+                "id": "red sea",
+                "latitude": 20.0,
+                "longitude": 40.0,
+                "article_count": 9,
+                "disruption_type": "geopolitical",
+                "label": "Red Sea (Maritime Security Disruption)",
+            },
+            {
+                "id": "panama",
+                "latitude": 8.5380,
+                "longitude": -80.7821,
+                "article_count": 6,
+                "disruption_type": "logistics",
+                "label": "Panama Canal (Logistics Disruption)",
+            },
+            {
+                "id": "suez canal",
+                "latitude": 30.7050,
+                "longitude": 32.3440,
+                "article_count": 5,
+                "disruption_type": "logistics",
+                "label": "Suez Canal (Transit Congestion)",
+            },
+            {
+                "id": "taiwan",
+                "latitude": 23.6978,
+                "longitude": 120.9605,
+                "article_count": 3,
+                "disruption_type": "semiconductor",
+                "label": "Taiwan (Semiconductor Vulnerability)",
+            },
+            {
+                "id": "rotterdam",
+                "latitude": 51.9289,
+                "longitude": 4.2700,
+                "article_count": 3,
+                "disruption_type": "port_congestion",
+                "label": "Rotterdam (Port Congestion)",
+            },
+            {
+                "id": "singapore",
+                "latitude": 1.3521,
+                "longitude": 103.8198,
+                "article_count": 2,
+                "disruption_type": "logistics",
+                "label": "Singapore (Strait Bottleneck)",
+            },
+            {
+                "id": "chile",
+                "latitude": -35.6751,
+                "longitude": -71.5430,
+                "article_count": 1,
+                "disruption_type": "labor_strike",
+                "label": "Chile (Copper Extraction Labor Strike)",
+            },
+            {
+                "id": "australia",
+                "latitude": -25.2744,
+                "longitude": 133.7751,
+                "article_count": 1,
+                "disruption_type": "weather",
+                "label": "Australia (Port Weather Warning)",
+            },
+        ]
+
+        # Initialize dictionary with baseline hotspots
+        hotspots_by_id = {}
+        for base in canonical_baselines:
+            hotspots_by_id[base["id"]] = base.copy()
+
+        # Alias mapping to merge coordinate duplicates (e.g. panama canal -> panama)
+        ALIAS_MAP = {
+            "panama canal": "panama",
+            "united states": "usa",
+            "persian gulf": "iran",
+            "strait of hormuz": "iran",
+            "bab el-mandeb": "red sea",
+        }
+
+        # Get region/location nodes from graph (or any nodes whose name maps to REGION_COORDS)
+        region_nodes = [
+            node for node in self.graph.nodes(data=True)
+            if node[1].get('type') in ('region', 'location') or str(node[0]).strip().lower() in REGION_COORDS
+        ]
+
+        # Dynamically overlay / add live nodes from the graph
+        for node_id, node_data in region_nodes:
+            raw_key = str(node_id).strip().lower()
+            key = ALIAS_MAP.get(raw_key, raw_key)
+            if key not in REGION_COORDS and raw_key not in REGION_COORDS:
+                continue
+
+            lat, lon = REGION_COORDS.get(key, REGION_COORDS.get(raw_key))
+            art_count = node_data.get('article_count', node_data.get('weight', 1))
+            dis_type = node_data.get('disruption_type', 'geopolitical')
+            last_updated = node_data.get('last_updated')
+
+            if key in hotspots_by_id:
+                # Merge: accumulate article counts and update recency
+                hotspots_by_id[key]["article_count"] = max(hotspots_by_id[key]["article_count"], art_count)
+                if dis_type and dis_type != 'unknown':
+                    hotspots_by_id[key]["disruption_type"] = dis_type
+                if last_updated:
+                    hotspots_by_id[key]["last_updated"] = last_updated
+            else:
+                hotspots_by_id[key] = {
+                    "id": key,
+                    "latitude": lat,
+                    "longitude": lon,
+                    "article_count": art_count,
+                    "disruption_type": dis_type,
+                    "last_updated": last_updated,
+                    "label": f"{key.title()} ({str(dis_type).title()})",
+                }
+
+        # Compute dynamic intensity, color, and pulse strength for each hotspot
+        hotspots = []
+        max_intensity = 0.0
+
+        for h in hotspots_by_id.values():
+            key = h["id"]
+            lat = h["latitude"]
+            lon = h["longitude"]
+            article_count = int(h.get("article_count", 1))
+            disruption_type = str(h.get("disruption_type", "geopolitical"))
+
+            # Step 8 Intensity Scale:
+            # 7+ articles: 0.70 - 1.00 (Critical Red)
+            # 4-6 articles: 0.40 - 0.69 (Significant Orange)
+            # 2-3 articles: 0.20 - 0.39 (Developing Yellow)
+            # 1 article:    0.10 - 0.19 (Minor Green)
+            if article_count >= 10:
+                base_intensity = min(0.70 + (article_count - 7) * 0.05, 1.0)
+            elif article_count >= 7:
+                base_intensity = 0.70 + (article_count - 7) * 0.06
+            elif article_count >= 4:
+                base_intensity = 0.40 + (article_count - 4) * 0.09
+            elif article_count >= 2:
+                base_intensity = 0.20 + (article_count - 2) * 0.08
+            else:
+                base_intensity = 0.15
+
+            # Apply time decay if last_updated is available
+            last_updated = h.get('last_updated')
+            time_decay = 1.0
+            if last_updated:
+                try:
+                    if isinstance(last_updated, str):
+                        dt = datetime.fromisoformat(last_updated.replace("Z", "+00:00"))
+                    elif isinstance(last_updated, datetime):
+                        dt = last_updated
+                    else:
+                        dt = None
+                    if dt:
+                        if dt.tzinfo is None:
+                            dt = dt.replace(tzinfo=timezone.utc)
+                        hours_ago = (datetime.now(timezone.utc) - dt).total_seconds() / 3600.0
+                        time_decay = max(0.3, 1.0 - (hours_ago / 168.0))
+                except Exception:
+                    time_decay = 1.0
+
+            intensity = base_intensity * time_decay
+
+            # Determine color strictly based on computed intensity:
+            if intensity >= 0.7:
+                color = "red"
+                pulse_strength = 1.0
+            elif intensity >= 0.4:
+                color = "orange"
+                pulse_strength = 0.7
+            elif intensity >= 0.2:
+                color = "yellow"
+                pulse_strength = 0.5
+            else:
+                color = "green"
+                pulse_strength = 0.3
+
+            label = h.get("label") or f"{key.title()} ({disruption_type.title()})"
+
+            hotspots.append({
+                "id": key,
+                "latitude": lat,
+                "longitude": lon,
+                "intensity": round(float(intensity), 2),
+                "article_count": article_count,
+                "disruption_type": disruption_type,
+                "color": color,
+                "pulse_strength": pulse_strength,
+                "label": label,
+            })
+            max_intensity = max(max_intensity, intensity)
+
+        # Sort by intensity (highest first, so Red is on top, then Orange, Yellow, Green)
+        hotspots.sort(key=lambda item: item["intensity"], reverse=True)
+
+        return {
+            "hotspots": hotspots,
+            "max_intensity": round(float(max_intensity), 2),
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "total_disruptions": len(hotspots),
         }
